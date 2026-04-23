@@ -4,56 +4,309 @@ title: Home
 nav_order: 1
 ---
 
-# ML Tutorials — From Zero to Deep Learning
+<style>
+/* ── Hero ─────────────────────────────────────────── */
+.page-hero {
+  text-align: center;
+  padding: 40px 20px 28px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 36px;
+}
+.page-hero h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+.page-hero p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0 0 18px;
+}
+.hero-cta {
+  display: inline-block;
+  background: #1e293b;
+  color: #fff;
+  padding: 9px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.hero-cta:hover { background: #334155; color: #fff; }
 
-Welcome! This site teaches machine learning from the ground up. No coding experience needed. Each tutorial explains a model in plain English, shows how it works, and gives you real Python code to try.
+/* ── Level sections ───────────────────────────────── */
+.level-section { margin-bottom: 40px; }
 
----
+.level-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+.level-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  color: #fff;
+}
+.badge-l1 { background: #64748b; }
+.badge-l2 { background: #334155; }
+.badge-l3 { background: #0f172a; }
 
-## Curriculum
+.level-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+}
+.level-count {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-left: auto;
+}
 
-### Level 1 — ML Foundations
+/* ── Card grid ────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
 
-| # | Tutorial | What You'll Learn |
-|---|----------|------------------|
-| 1 | [What is Machine Learning?](tutorials/what-is-ml) | The big picture — what ML is and why it matters |
-| 2 | [Linear Regression](tutorials/linear-regression) | Predict numbers using a straight line |
-| 3 | [Logistic Regression](tutorials/logistic-regression) | Classify things into two categories |
-| 4 | [K-Nearest Neighbors](tutorials/knn) | Classify by looking at similar examples |
-| 5 | [Naive Bayes](tutorials/naive-bayes) | Make predictions using probability |
-| 6 | [Decision Trees](tutorials/decision-tree) | Make decisions step by step |
-| 7 | [Random Forests](tutorials/random-forest) | Combine many trees for better results |
-| 8 | [Support Vector Machines](tutorials/svm) | Find the best boundary between classes |
-| 9 | [K-Means Clustering](tutorials/kmeans) | Group similar data points together |
-| 10 | [PCA](tutorials/pca) | Simplify data without losing much information |
+/* ── Card ─────────────────────────────────────────── */
+.tcard {
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: box-shadow 0.2s, transform 0.2s;
+  text-decoration: none;
+  display: block;
+}
+.tcard:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  transform: translateY(-2px);
+}
+.tcard-header {
+  padding: 18px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 96px;
+  justify-content: center;
+}
+.tcard-icon { font-size: 26px; margin-bottom: 7px; }
+.tcard-name {
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  line-height: 1.35;
+}
 
-### Level 2 — Intermediate ML
+/* Level colour modifiers */
+.l1 .tcard-header { background: linear-gradient(135deg, #64748b, #94a3b8); }
+.l2 .tcard-header { background: linear-gradient(135deg, #334155, #475569); }
+.l3 .tcard-header { background: linear-gradient(135deg, #0f172a, #1e293b); }
 
-| # | Tutorial | What You'll Learn |
-|---|----------|------------------|
-| 11 | [Gradient Boosting](tutorials/gradient-boosting) | Build powerful models by learning from mistakes |
-| 12 | [XGBoost](tutorials/xgboost) | A faster, more powerful take on Gradient Boosting |
+/* Peek strip */
+.tcard-peek {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 0 12px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.25s ease;
+  border-top: 2px solid #e2e8f0;
+}
+.tcard:hover .tcard-peek {
+  max-height: 80px;
+  padding: 10px 12px;
+}
+</style>
 
-### Level 3 — Deep Learning
+<!-- Hero -->
+<div class="page-hero">
+  <h1>ML Tutorials</h1>
+  <p>From Zero to Deep Learning — plain English, real code, no fluff.</p>
+  <a class="hero-cta" href="{{ '/tutorials/what-is-ml' | relative_url }}">Start with What is ML? →</a>
+</div>
 
-| # | Tutorial | What You'll Learn |
-|---|----------|------------------|
-| 13 | [What are Neural Networks?](tutorials/neural-networks-intro) | The building blocks of deep learning |
-| 14 | [Multilayer Perceptron (MLP)](tutorials/mlp) | Your first real neural network |
-| 15 | [Convolutional Neural Networks (CNN)](tutorials/cnn) | Neural networks that understand images |
-| 16 | [Recurrent Neural Networks (RNN)](tutorials/rnn) | Neural networks that understand sequences |
-| 17 | [Long Short-Term Memory (LSTM)](tutorials/lstm) | RNNs with a long-term memory |
+<!-- Level 1 -->
+<div class="level-section">
+  <div class="level-header">
+    <span class="level-badge badge-l1">Level 1</span>
+    <span class="level-title">ML Foundations</span>
+    <span class="level-count">10 tutorials</span>
+  </div>
+  <div class="cards-grid">
 
----
+    <a class="tcard l1" href="{{ '/tutorials/what-is-ml' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">❓</div>
+        <div class="tcard-name">What is Machine Learning?</div>
+      </div>
+      <div class="tcard-peek">The big picture — what ML actually is, why it matters, and where it shows up in the real world.</div>
+    </a>
 
-## Before You Start
+    <a class="tcard l1" href="{{ '/tutorials/linear-regression' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">📈</div>
+        <div class="tcard-name">Linear Regression</div>
+      </div>
+      <div class="tcard-peek">Predict numbers using a straight line — the simplest and most widely used idea in all of ML.</div>
+    </a>
 
-Install Python and these libraries once — then you're ready for any tutorial:
+    <a class="tcard l1" href="{{ '/tutorials/logistic-regression' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🔵</div>
+        <div class="tcard-name">Logistic Regression</div>
+      </div>
+      <div class="tcard-peek">Sort things into two buckets — spam or not, sick or healthy — using a surprisingly simple trick.</div>
+    </a>
 
-```bash
-pip install scikit-learn numpy matplotlib tensorflow xgboost
-```
+    <a class="tcard l1" href="{{ '/tutorials/knn' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">👥</div>
+        <div class="tcard-name">K-Nearest Neighbors</div>
+      </div>
+      <div class="tcard-peek">Classify anything by asking: what do its closest neighbours look like?</div>
+    </a>
 
----
+    <a class="tcard l1" href="{{ '/tutorials/naive-bayes' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🎲</div>
+        <div class="tcard-name">Naive Bayes</div>
+      </div>
+      <div class="tcard-peek">Make smart predictions using probability — fast, simple, and surprisingly good at text.</div>
+    </a>
 
-*Start with [What is Machine Learning?](tutorials/what-is-ml) →*
+    <a class="tcard l1" href="{{ '/tutorials/decision-tree' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🌳</div>
+        <div class="tcard-name">Decision Trees</div>
+      </div>
+      <div class="tcard-peek">Make decisions step by step — like a flowchart your computer can learn from data.</div>
+    </a>
+
+    <a class="tcard l1" href="{{ '/tutorials/random-forest' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🌲</div>
+        <div class="tcard-name">Random Forests</div>
+      </div>
+      <div class="tcard-peek">Build hundreds of trees and let them vote — together they're far smarter than any one tree alone.</div>
+    </a>
+
+    <a class="tcard l1" href="{{ '/tutorials/svm' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">✂️</div>
+        <div class="tcard-name">Support Vector Machines</div>
+      </div>
+      <div class="tcard-peek">Find the widest possible boundary between two groups — works even when data isn't linearly separable.</div>
+    </a>
+
+    <a class="tcard l1" href="{{ '/tutorials/kmeans' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🔵</div>
+        <div class="tcard-name">K-Means Clustering</div>
+      </div>
+      <div class="tcard-peek">Group similar data points together without any labels — the machine figures out the clusters itself.</div>
+    </a>
+
+    <a class="tcard l1" href="{{ '/tutorials/pca' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">📉</div>
+        <div class="tcard-name">PCA</div>
+      </div>
+      <div class="tcard-peek">Squash high-dimensional data down to fewer dimensions while keeping the most important patterns.</div>
+    </a>
+
+  </div>
+</div>
+
+<!-- Level 2 -->
+<div class="level-section">
+  <div class="level-header">
+    <span class="level-badge badge-l2">Level 2</span>
+    <span class="level-title">Intermediate ML</span>
+    <span class="level-count">2 tutorials</span>
+  </div>
+  <div class="cards-grid">
+
+    <a class="tcard l2" href="{{ '/tutorials/gradient-boosting' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">⚡</div>
+        <div class="tcard-name">Gradient Boosting</div>
+      </div>
+      <div class="tcard-peek">Build a powerful model by training each new tree to fix what the last one got wrong.</div>
+    </a>
+
+    <a class="tcard l2" href="{{ '/tutorials/xgboost' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🚀</div>
+        <div class="tcard-name">XGBoost</div>
+      </div>
+      <div class="tcard-peek">A faster, smarter take on Gradient Boosting — the algorithm that wins most Kaggle competitions.</div>
+    </a>
+
+  </div>
+</div>
+
+<!-- Level 3 -->
+<div class="level-section">
+  <div class="level-header">
+    <span class="level-badge badge-l3">Level 3</span>
+    <span class="level-title">Deep Learning</span>
+    <span class="level-count">5 tutorials</span>
+  </div>
+  <div class="cards-grid">
+
+    <a class="tcard l3" href="{{ '/tutorials/neural-networks-intro' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🧠</div>
+        <div class="tcard-name">What are Neural Networks?</div>
+      </div>
+      <div class="tcard-peek">The idea that changed everything — loosely inspired by the brain, but really just clever maths.</div>
+    </a>
+
+    <a class="tcard l3" href="{{ '/tutorials/mlp' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🔗</div>
+        <div class="tcard-name">Multilayer Perceptron (MLP)</div>
+      </div>
+      <div class="tcard-peek">Your first real neural network — stack some layers, train it on data, watch it learn.</div>
+    </a>
+
+    <a class="tcard l3" href="{{ '/tutorials/cnn' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🖼️</div>
+        <div class="tcard-name">CNN</div>
+      </div>
+      <div class="tcard-peek">Neural networks that see — how computers learn to recognise cats, faces, and X-rays.</div>
+    </a>
+
+    <a class="tcard l3" href="{{ '/tutorials/rnn' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">🔄</div>
+        <div class="tcard-name">RNN</div>
+      </div>
+      <div class="tcard-peek">Networks with memory — built for sequences like text, speech, and time-series data.</div>
+    </a>
+
+    <a class="tcard l3" href="{{ '/tutorials/lstm' | relative_url }}">
+      <div class="tcard-header">
+        <div class="tcard-icon">💡</div>
+        <div class="tcard-name">LSTM</div>
+      </div>
+      <div class="tcard-peek">A smarter RNN that can remember things from way earlier in a sequence without forgetting.</div>
+    </a>
+
+  </div>
+</div>
