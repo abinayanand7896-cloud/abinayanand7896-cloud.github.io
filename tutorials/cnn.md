@@ -9,15 +9,15 @@ nav_order: 4
 
 ## What is it?
 
-A Convolutional Neural Network is a type of neural network designed to process data that has a grid-like structure — most famously images. Instead of connecting every neuron to every pixel (which would be computationally ruinous for a 1080p image), a CNN slides a small filter across the image, looking for patterns in local patches. This makes it both efficient and powerful: the same filter that learns to detect a vertical edge in one corner of the image can detect that same edge anywhere else. CNNs are the reason computers can now recognise faces, read handwriting, and diagnose medical scans with human-level accuracy.
+A Convolutional Neural Network is a type of neural network designed to process data that has a grid-like structure, most famously images. Instead of connecting every neuron to every pixel (which would be computationally ruinous for a 1080p image), a CNN slides a small filter across the image, looking for patterns in local patches. This makes it both efficient and powerful: the same filter that learns to detect a vertical edge in one corner of the image can detect that same edge anywhere else. CNNs are the reason computers can now recognise faces, read handwriting, and diagnose medical scans with human-level accuracy.
 
 ---
 
 ## The Idea
 
-Think of how you scan a page of text. You don't process the entire page at once — your eye moves in small jumps, reading a few letters at a time. A CNN works similarly. A small grid of weights called a **filter** (or kernel) slides across the input image one patch at a time. At each position it multiplies its weights against the pixel values it's covering and sums the results, producing a single number. As the filter slides across the whole image, it produces a new grid of numbers called a **feature map** — a representation of where, and how strongly, the filter's pattern appears in the original image.
+Think of how you scan a page of text. You don't process the entire page at once. Your eye moves in small jumps, reading a few letters at a time. A CNN works similarly. A small grid of weights called a **filter** (or kernel) slides across the input image one patch at a time. At each position it multiplies its weights against the pixel values it's covering and sums the results, producing a single number. As the filter slides across the whole image, it produces a new grid of numbers called a **feature map**: a representation of where, and how strongly, the filter's pattern appears in the original image.
 
-A CNN stacks many such filters, each learning to detect a different pattern. Early filters learn simple things like edges and corners. Deeper filters combine those simple patterns into more complex structures — textures, shapes, object parts — until the final layers can recognise a complete object. The whole thing is learned end-to-end from labelled training data, with no human hand-crafting the filters.
+A CNN stacks many such filters, each learning to detect a different pattern. Early filters learn simple things like edges and corners. Deeper filters combine those simple patterns into more complex structures: textures, shapes, object parts, until the final layers can recognise a complete object. The whole thing is learned end-to-end from labelled training data, with no human hand-crafting the filters.
 
 ---
 
@@ -123,7 +123,7 @@ With **stride** $s$ (sliding the filter $s$ pixels at a time instead of 1):
 
 $$H_{\text{out}} = \left\lfloor \frac{H - k + 2p}{s} \right\rfloor + 1$$
 
-The number of learnable parameters in one convolutional layer is $k \times k \times C_{\text{in}} \times C_{\text{out}}$, where $C_{\text{in}}$ is the number of input channels (e.g., 3 for RGB) and $C_{\text{out}}$ is the number of filters. This is dramatically fewer parameters than a fully connected layer of the same size — which is the key efficiency advantage of CNNs.
+The number of learnable parameters in one convolutional layer is $k \times k \times C_{\text{in}} \times C_{\text{out}}$, where $C_{\text{in}}$ is the number of input channels (e.g., 3 for RGB) and $C_{\text{out}}$ is the number of filters. This is dramatically fewer parameters than a fully connected layer of the same size, which is the key efficiency advantage of CNNs.
 
 </details>
 
@@ -131,37 +131,47 @@ The number of learnable parameters in one convolutional layer is $k \times k \ti
 
 ## How It Learns
 
-A CNN is trained with standard backpropagation, exactly like any other neural network. The filter weights start randomly and are adjusted each training step to minimise the loss. What's remarkable is that nobody tells the network what to look for — it figures out on its own that early filters should detect edges, later filters should detect textures and shapes, and the final layers should combine everything into object recognition. This hierarchical feature learning is the CNN's superpower, and it emerges purely from gradient descent on labelled data.
+A CNN is trained with standard backpropagation, exactly like any other neural network. The filter weights start randomly and are adjusted each training step to minimise the loss. What's remarkable is that nobody tells the network what to look for. It figures out on its own that early filters should detect edges, later filters should detect textures and shapes, and the final layers should combine everything into object recognition. This hierarchical feature learning is the CNN's superpower, and it emerges purely from gradient descent on labelled data.
 
 ---
 
 ## When to Use It
 
-CNNs are the default choice for any task involving images — classification, object detection, segmentation, medical imaging, satellite imagery. They also work well on other grid-like data: audio spectrograms, time-series signals, and even text (treated as a 1D sequence). They do require more data than classical ML models to train well from scratch, but using a pretrained model (transfer learning) largely solves this — you can fine-tune a pretrained CNN on a small dataset and still get excellent results.
+CNNs are the default choice for any task involving images: classification, object detection, segmentation, medical imaging, satellite imagery. They also work well on other grid-like data: audio spectrograms, time-series signals, and even text (treated as a 1D sequence). They do require more data than classical ML models to train well from scratch, but using a pretrained model (transfer learning) largely solves this. You can fine-tune a pretrained CNN on a small dataset and still get excellent results.
 
 ---
 
 ## Try It Yourself
 
+If you have not set up Python yet, start with the [Get Started guide](../setup) first.
+
+This code defines a small CNN architecture for classifying 28x28 handwritten digit images. You'll see how the convolution and pooling layers reduce the spatial dimensions as information is extracted.
+
+Copy this into a cell and run it with Shift + Enter:
+
 ```python
-import torch
-import torch.nn as nn
+import torch                                        # PyTorch
+import torch.nn as nn                              # neural network modules
 
 # Define a simple CNN for MNIST (28x28 grayscale images, 10 classes)
 class SimpleCNN(nn.Module):
     def __init__(self):
         super().__init__()
+        # First convolutional layer: 1 input channel, 16 filters of size 3x3
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1)
+        # Second convolutional layer: 16 channels in, 32 filters out
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
+        # Max pooling: takes the maximum in each 2x2 patch (halves spatial size)
         self.pool  = nn.MaxPool2d(2, 2)
+        # Fully connected output layer: 32 channels × 7×7 spatial = 1568 inputs
         self.fc    = nn.Linear(32 * 7 * 7, 10)
-        self.relu  = nn.ReLU()
+        self.relu  = nn.ReLU()     # non-linear activation
 
     def forward(self, x):
-        x = self.pool(self.relu(self.conv1(x)))  # -> 16 x 14 x 14
-        x = self.pool(self.relu(self.conv2(x)))  # -> 32 x 7 x 7
-        x = x.view(-1, 32 * 7 * 7)              # flatten
-        return self.fc(x)                         # -> 10 class scores
+        x = self.pool(self.relu(self.conv1(x)))   # conv1 → ReLU → pool: 16 x 14 x 14
+        x = self.pool(self.relu(self.conv2(x)))   # conv2 → ReLU → pool: 32 x 7 x 7
+        x = x.view(-1, 32 * 7 * 7)               # flatten: 1568 numbers per image
+        return self.fc(x)                          # output: 10 class scores
 
 model = SimpleCNN()
 print(model)
@@ -181,11 +191,26 @@ SimpleCNN(
 Total parameters: 21,658
 ```
 
+**What each line does:**
+- `nn.Conv2d(1, 16, kernel_size=3)`: 16 filters, each 3x3 pixels, learning 16 different patterns
+- `nn.MaxPool2d(2, 2)`: reduces each feature map by half, keeping only the strongest activations
+- `x.view(-1, 32 * 7 * 7)`: flattens the 3D feature maps into a 1D vector for the final layer
+- `nn.Linear(32 * 7 * 7, 10)`: turns the 1568 extracted features into 10 class scores
+- `sum(p.numel() for p in model.parameters())`: counts all trainable numbers in the network
+
+**What just happened?**
+
+This CNN has only 21,658 parameters, but it can classify 28x28 images into 10 digit classes. A fully-connected network doing the same job would need far more parameters. The key is weight sharing: the same filter slides across the whole image, so it learns one pattern and can detect it anywhere.
+
 ---
 
 ## Key Takeaways
 
-A CNN scans images with small learned filters, each producing a feature map that highlights where a particular pattern appears. Stacking many convolutional layers builds up a hierarchy of features — from simple edges to complex objects — entirely from data. The weight-sharing trick (the same filter applies everywhere in the image) is what makes CNNs both efficient and powerful. They are the foundation of modern computer vision, and understanding them is essential before tackling transformers applied to images.
+- CNNs scan images with small learned filters, each producing a feature map showing where a particular pattern appears.
+- Stacking convolutional layers builds up a hierarchy of features, from simple edges to complex objects, entirely from data.
+- Weight sharing (the same filter applies everywhere in the image) makes CNNs both efficient and powerful.
+- They're the foundation of modern computer vision, and transfer learning makes them accessible even on small datasets.
+- Understanding CNNs is essential before tackling transformers applied to images.
 
 ---
 

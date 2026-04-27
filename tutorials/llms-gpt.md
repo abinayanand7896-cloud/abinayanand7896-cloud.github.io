@@ -9,4 +9,4 @@ has_children: false
 
 *Coming soon.*
 
-This track will cover large language models — how GPT works, how they are trained, fine-tuning, prompting, and what happens under the hood.
+This track will cover large language models: how GPT works, how they are trained, fine-tuning, prompting, and what happens under the hood.

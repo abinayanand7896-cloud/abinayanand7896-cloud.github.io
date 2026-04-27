@@ -9,15 +9,15 @@ nav_order: 13
 
 ## What is it?
 
-Principal Component Analysis (PCA) is a technique that reduces the number of features in a dataset by finding the directions along which the data varies most. Those directions — the principal components — are ordered from most to least variance, so you can keep just the first few and discard the rest without losing too much information. It is the most widely used dimensionality reduction technique in machine learning.
+Principal Component Analysis (PCA) is a technique that reduces the number of features in a dataset by finding the directions along which the data varies most. Those directions, called the principal components, are ordered from most to least variance, so you can keep just the first few and discard the rest without losing too much information. It's the most widely used dimensionality reduction technique in machine learning.
 
 ---
 
 ## The Idea
 
-Imagine a cloud of data points in 3D space, but they mostly lie close to a flat surface embedded in that space. PCA finds that surface — and any other lower-dimensional structure — by identifying the axes along which the data spreads out the most. The first principal component is the direction of maximum variance. The second is the direction of maximum remaining variance that is perpendicular to the first. And so on. By projecting all data points onto just the first two or three principal components, you can reduce 100 features to 2 while keeping most of the meaningful variation.
+Imagine a cloud of data points in 3D space, but they mostly lie close to a flat surface embedded in that space. PCA finds that surface, and any other lower-dimensional structure, by identifying the axes along which the data spreads out the most. The first principal component is the direction of maximum variance. The second is the direction of maximum remaining variance that's perpendicular to the first. And so on. By projecting all data points onto just the first two or three principal components, you can reduce 100 features to 2 while keeping most of the meaningful variation.
 
-This is useful for two reasons. First, high-dimensional data is hard to visualise and slower to train on. PCA compresses it without supervision — no labels needed. Second, dimensions with very low variance often capture noise rather than signal, so discarding them can actually improve downstream model performance.
+This is useful for two reasons. First, high-dimensional data is hard to visualise and slower to train on. PCA compresses it without supervision. No labels needed. Second, dimensions with very low variance often capture noise rather than signal, so discarding them can actually improve downstream model performance.
 
 The components are linear combinations of the original features. Each one is a weighted average of all your input variables, with the weights chosen to maximise variance. These weights are the eigenvectors of the data's covariance matrix, and the amount of variance each component explains is given by the corresponding eigenvalue.
 
@@ -95,9 +95,6 @@ The components are linear combinations of the original features. Each one is a w
         marker-end="url(#arrowPC1)"/>
 
   <!-- PC2 arrow: perpendicular to PC1, shorter, from centre (170,135) -->
-  <!-- PC1 direction vector: (164, -63), normalised perpendicular: (63, 164), scaled to 45px -->
-  <!-- From centre (170,135): perpendicular direction (63/174, 164/174) * 50 = (18, 47) -->
-  <!-- Arrow from (170,135) to (188, 182) -->
   <line x1="170" y1="135" x2="188" y2="182"
         stroke="#2a7ae0" stroke-width="2.5" stroke-linecap="round"
         marker-end="url(#arrowPC2)"/>
@@ -127,7 +124,7 @@ where $\mathbf{W}$ is the matrix of eigenvectors (principal components) of the c
 
 Centre the data by subtracting the mean of each feature. Then compute the covariance matrix $\mathbf{\Sigma} = \frac{1}{n}\mathbf{X}^T\mathbf{X}$.
 
-Solve the eigenvalue problem $\mathbf{\Sigma}\mathbf{w} = \lambda\mathbf{w}$. The eigenvector with the largest eigenvalue $\lambda_1$ is the first principal component — it explains the most variance. Sort all eigenvectors by their eigenvalues in descending order, then take the top $k$ to form the projection matrix $\mathbf{W}$.
+Solve the eigenvalue problem $\mathbf{\Sigma}\mathbf{w} = \lambda\mathbf{w}$. The eigenvector with the largest eigenvalue $\lambda_1$ is the first principal component. It explains the most variance. Sort all eigenvectors by their eigenvalues in descending order, then take the top $k$ to form the projection matrix $\mathbf{W}$.
 
 The fraction of total variance explained by component $i$ is $\lambda_i / \sum_j \lambda_j$. This is what a scree plot displays, and it tells you how many components to keep.
 
@@ -139,9 +136,9 @@ In practice, Singular Value Decomposition (SVD) of the data matrix is used inste
 
 ## How It Learns
 
-PCA is an unsupervised technique — it uses no labels. It centres the data, computes the covariance structure, and finds the eigenvectors of the covariance matrix. These eigenvectors define the principal component directions. To reduce dimensionality, you choose how many components to keep, typically guided by a scree plot showing cumulative explained variance, and then project the data by matrix multiplication.
+PCA is an unsupervised technique. It uses no labels. It centres the data, computes the covariance structure, and finds the eigenvectors of the covariance matrix. These eigenvectors define the principal component directions. To reduce dimensionality, you choose how many components to keep, typically guided by a scree plot showing cumulative explained variance, and then project the data by matrix multiplication.
 
-There is no iterative training or loss function involved. PCA is a one-shot linear algebra operation: you run it once and get back a transformed dataset. This makes it extremely fast compared to iterative methods, and the result is fully deterministic given the same input data.
+There's no iterative training or loss function involved. PCA is a one-shot linear algebra operation: you run it once and get back a transformed dataset. This makes it extremely fast compared to iterative methods, and the result is fully deterministic given the same input data.
 
 ---
 
@@ -155,24 +152,30 @@ The main limitation is that principal components are linear combinations of all 
 
 ## Try It Yourself
 
+If you have not set up Python yet, start with the [Get Started guide](setup) first.
+
+This code takes a dataset with 30 features and compresses it down to just 2 components, then checks how much information was kept.
+
+Copy this into a cell and run it with Shift + Enter:
+
 ```python
-from sklearn.datasets import load_breast_cancer
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer    # 30-feature medical dataset
+from sklearn.preprocessing import StandardScaler   # scale before PCA
+from sklearn.decomposition import PCA              # the PCA model
+import matplotlib.pyplot as plt                    # for plotting
 
 # Load dataset: 569 samples, 30 features
 data = load_breast_cancer()
 X = data.data
 y = data.target
 
-# Scale features — PCA is sensitive to variance, so scaling matters
+# Scale features: PCA is sensitive to variance, so scaling matters
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+X_scaled = scaler.fit_transform(X)   # gives each feature mean=0, std=1
 
-# Reduce 30 features to 2 principal components
+# Reduce 30 features to just 2 principal components
 pca = PCA(n_components=2)
-X_reduced = pca.fit_transform(X_scaled)
+X_reduced = pca.fit_transform(X_scaled)   # finds the 2 directions of most variance
 
 # How much variance do the two components explain?
 print("Explained variance ratio:", pca.explained_variance_ratio_.round(3))
@@ -185,7 +188,7 @@ for label, name in enumerate(data.target_names):
     plt.scatter(X_reduced[mask, 0], X_reduced[mask, 1], label=name, alpha=0.6)
 plt.xlabel("Principal Component 1")
 plt.ylabel("Principal Component 2")
-plt.title("Breast Cancer Dataset — 30 Features → 2 Components")
+plt.title("Breast Cancer Dataset: 30 Features reduced to 2 Components")
 plt.legend()
 plt.tight_layout()
 plt.show()
@@ -197,13 +200,28 @@ Explained variance ratio: [0.443 0.19 ]
 Total variance retained: 63.3%
 ```
 
-A scatter plot appears with two overlapping but visibly separated clusters — malignant and benign tumours — projected onto two dimensions from the original 30 features.
+A scatter plot appears with two overlapping but visibly separated clusters: malignant and benign tumours, projected onto two dimensions from the original 30 features.
+
+**What each line does:**
+- `StandardScaler()`: makes each feature contribute equally before we measure variance
+- `PCA(n_components=2)`: creates a PCA model that will keep the 2 most informative directions
+- `pca.fit_transform(X_scaled)`: finds the principal components and projects the data onto them
+- `pca.explained_variance_ratio_`: shows what fraction of total variance each component captures
+- `plt.scatter(...)`: plots each tumour as a dot, coloured by whether it's malignant or benign
+
+**What just happened?**
+
+Two numbers now describe each tumour instead of thirty. And those two numbers still capture 63.3% of the total variation in the original data. The scatter plot shows that even with this compression, the two tumour types are mostly separable. That's PCA at work.
 
 ---
 
 ## Key Takeaways
 
-PCA finds the directions in your data with the most variance and lets you project your data onto just those directions, discarding the rest. The first two or three components often capture the majority of meaningful variation in the data, making them useful for both visualisation and noise reduction. Because PCA is unsupervised and linear, it is fast to run and easy to interpret in terms of explained variance — a scree plot gives you an honest picture of how much information you are keeping. It is typically the first dimensionality reduction technique to try, especially as a preprocessing step before a classifier or clusterer. When the data has non-linear structure, consider t-SNE or UMAP, but PCA is almost always worth running first.
+- PCA finds the directions in your data with the most variance and projects your data onto just those directions.
+- The first two or three components often capture the majority of meaningful variation, making them useful for visualisation and noise reduction.
+- It's unsupervised and linear, so it's fast to run and easy to interpret in terms of explained variance.
+- Always scale features before running PCA, otherwise high-magnitude features will dominate.
+- It's typically the first dimensionality reduction technique to try. For non-linear structure, consider t-SNE or UMAP.
 
 ---
 

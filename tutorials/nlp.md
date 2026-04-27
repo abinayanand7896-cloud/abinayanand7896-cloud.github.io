@@ -9,4 +9,4 @@ has_children: false
 
 *Coming soon.*
 
-This track will cover how machines understand and generate text — tokenisation, word embeddings, sequence models, and more.
+This track will cover how machines understand and generate text: tokenisation, word embeddings, sequence models, and more.

@@ -9,17 +9,17 @@ nav_order: 4
 
 ## What is it?
 
-Logistic Regression predicts the probability that an input belongs to a category — it outputs a number between 0 and 1, not a raw label. Despite the name, it is a classification algorithm, not a regression one. It is used everywhere: spam detection, disease diagnosis, credit risk scoring.
+Logistic Regression predicts the probability that an input belongs to a category. It outputs a number between 0 and 1, not a raw label. Despite the name, it's a classification algorithm, not a regression one. It's used everywhere: spam detection, disease diagnosis, credit risk scoring.
 
 ---
 
 ## The Idea
 
-If you tried to use Linear Regression for classification, you would run into an immediate problem: a straight line can output any number, including negatives and values far above 1. That makes no sense for a probability, which must live between 0 and 1.
+If you tried to use Linear Regression for classification, you'd run into an immediate problem: a straight line can output any number, including negatives and values far above 1. That makes no sense for a probability, which must stay between 0 and 1.
 
-The fix is the sigmoid function. Feed it any number — positive, negative, enormous — and it squashes the result into the (0, 1) range. Near zero input gives you something close to 0.5. Very large positive input approaches 1. Very large negative input approaches 0. The curve looks like a stretched S.
+The fix is the sigmoid function. Feed it any number and it squashes the result into the (0, 1) range. Near-zero input gives you something close to 0.5. Very large positive input approaches 1. Very large negative input approaches 0. The curve looks like a stretched S.
 
-Logistic Regression combines both ideas. First it computes a weighted sum of the input features, exactly the way Linear Regression does. Then it passes that sum through the sigmoid, turning an unbounded number into a probability. If that probability is above 0.5, the model predicts class 1; below 0.5, it predicts class 0. The threshold of 0.5 can be adjusted if your problem calls for it.
+Logistic Regression combines both ideas. First it computes a weighted sum of the input features, exactly the way Linear Regression does. Then it passes that sum through the sigmoid, turning an unbounded number into a probability. If that probability is above 0.5, the model predicts class 1. Below 0.5, it predicts class 0. You can adjust that 0.5 threshold if your problem calls for it.
 
 ---
 
@@ -54,13 +54,13 @@ $$\hat{y} = \sigma(\mathbf{w}^T \mathbf{x} + b), \quad \text{where} \quad \sigma
 
 <details><summary>Show the derivation</summary>
 
-To train the model, we need a loss function that penalises wrong predictions. Mean squared error — the workhorse of Linear Regression — does not behave well with probabilities. Instead, Logistic Regression uses **binary cross-entropy**:
+To train the model, we need a loss function that penalises wrong predictions. Mean squared error doesn't behave well with probabilities. Instead, Logistic Regression uses **binary cross-entropy**:
 
 $$\mathcal{L} = -\frac{1}{n}\sum_{i=1}^{n}\left[y_i \log(\hat{y}_i) + (1-y_i)\log(1-\hat{y}_i)\right]$$
 
-The intuition is elegant. When the true label is 1, only the first term survives: $$-\log(\hat{y}_i)$$. If the model predicts a probability close to 1, the loss is near zero. If the model is confidently wrong — say, $$\hat{y}_i = 0.01$$ — the loss becomes very large, because $$-\log(0.01) \approx 4.6$$. The same logic applies in the other direction for true label 0. Confident mistakes are punished harshly; uncertain predictions are punished mildly.
+The intuition is elegant. When the true label is 1, only the first term survives: $-\log(\hat{y}_i)$. If the model predicts a probability close to 1, the loss is near zero. If the model is confidently wrong, say $\hat{y}_i = 0.01$, the loss becomes very large, because $-\log(0.01) \approx 4.6$. Confident mistakes are punished harshly. Uncertain predictions are punished mildly.
 
-Unlike Linear Regression, which has a closed-form solution (the Normal Equation), Logistic Regression has no algebraic shortcut. We minimise the cross-entropy loss iteratively using gradient descent, nudging the weights step by step in the direction that reduces the loss.
+Unlike Linear Regression, which has a closed-form solution, Logistic Regression has no algebraic shortcut. We minimise the cross-entropy loss iteratively using gradient descent, nudging the weights step by step.
 
 </details>
 
@@ -68,43 +68,50 @@ Unlike Linear Regression, which has a closed-form solution (the Normal Equation)
 
 ## How It Learns
 
-At the start of training the weights are small random numbers, so the model's probability estimates are essentially guesses. On each pass through the training data, gradient descent computes how much each weight contributed to the error and nudges every weight slightly in the direction that would reduce the loss. Repeat this thousands of times and the weights settle into values that make the predicted probabilities as accurate as possible on the training set.
+At the start of training, the weights are small random numbers, so the model's probability estimates are essentially guesses. On each pass through the training data, gradient descent computes how much each weight contributed to the error and nudges every weight slightly in the direction that would reduce the loss. Repeat this thousands of times and the weights settle into values that make the predicted probabilities as accurate as possible on the training set.
 
-This is different from Linear Regression, which can solve for the optimal weights in a single algebraic step using the Normal Equation. The sigmoid's non-linearity breaks that shortcut, so iterative optimisation is the only path. In practice this is rarely a problem — modern optimisers converge quickly even on large datasets.
+This is different from Linear Regression, which can solve for the optimal weights in a single algebraic step. The sigmoid's non-linearity breaks that shortcut, so iterative optimisation is the only path. In practice this is rarely a problem. Modern optimisers converge quickly even on large datasets.
 
 ---
 
 ## When to Use It
 
-Logistic Regression shines on binary classification problems where you want an interpretable probability output, not just a hard label. The weight attached to each feature directly tells you how much that feature pushes the prediction toward one class — positive weights increase the probability of class 1, negative weights decrease it. That interpretability is genuinely valuable in medicine, finance, and any domain where you need to explain a decision.
+Logistic Regression shines on binary classification problems where you want an interpretable probability output, not just a hard label. The weight attached to each feature directly tells you how much that feature pushes the prediction toward one class. Positive weights increase the probability of class 1. Negative weights decrease it. That interpretability is genuinely valuable in medicine, finance, and anywhere you need to explain a decision.
 
-It works best when the true decision boundary between classes is roughly linear in the feature space. When the boundary is highly curved or the features interact in complex ways, a tree-based model or a neural network will usually do better. For problems with more than two classes, swapping the sigmoid for a softmax function extends the same idea to multi-class settings.
+It works best when the true decision boundary between classes is roughly linear. When the boundary is highly curved or the features interact in complex ways, a tree-based model or a neural network will usually do better. For problems with more than two classes, swapping the sigmoid for a softmax function extends the same idea to multi-class settings.
 
 ---
 
 ## Try It Yourself
 
+If you have not set up Python yet, start with the [Get Started guide](setup) first.
+
+This code trains a Logistic Regression model to tell apart two types of iris flowers, then shows both the accuracy and the predicted probabilities for each test sample.
+
+Copy this into a cell and run it with Shift + Enter:
+
 ```python
-from sklearn.datasets import load_iris
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_iris                 # classic flower dataset
+from sklearn.linear_model import LogisticRegression    # the model
+from sklearn.model_selection import train_test_split   # split data into train/test
+from sklearn.metrics import accuracy_score             # measure how often we're right
 
 # Load iris and treat it as binary: setosa (0) vs. not setosa (1 or 2)
 data = load_iris()
 X = data.data
-y = (data.target != 0).astype(int)  # 0 = setosa, 1 = not setosa
+y = (data.target != 0).astype(int)   # 0 = setosa, 1 = not setosa
 
+# Hold out 20% of data for testing
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-model = LogisticRegression(max_iter=200)
-model.fit(X_train, y_train)
+model = LogisticRegression(max_iter=200)   # create and configure the model
+model.fit(X_train, y_train)                # train on the training data
 
-predictions = model.predict(X_test)
+predictions = model.predict(X_test)        # predict class labels for test data
 print(f"Accuracy: {accuracy_score(y_test, predictions) * 100:.1f}%")
 
 # Show predicted probabilities for the first five test samples
-probs = model.predict_proba(X_test[:5])
+probs = model.predict_proba(X_test[:5])    # get probability scores, not just labels
 for i, (p0, p1) in enumerate(probs):
     print(f"Sample {i+1}: P(setosa)={p0:.2f}  P(not setosa)={p1:.2f}")
 ```
@@ -119,11 +126,26 @@ Sample 4: P(setosa)=0.00  P(not setosa)=1.00
 Sample 5: P(setosa)=0.00  P(not setosa)=1.00
 ```
 
+**What each line does:**
+- `(data.target != 0).astype(int)`: converts the three-class problem into two classes: setosa vs. everything else
+- `train_test_split(...)`: splits data so the model trains on 80% and we test on the remaining 20%
+- `model.fit(X_train, y_train)`: trains the model by adjusting weights to minimise cross-entropy loss
+- `model.predict(X_test)`: predicts a class label (0 or 1) for each test sample
+- `model.predict_proba(X_test[:5])`: returns actual probabilities, not just labels
+
+**What just happened?**
+
+The model learned which flower measurements best separate setosa from the others. Sample 3 is interesting: the model says there's a 98% chance it's setosa, not a confident 100%. That's the power of probability outputs. You can see how sure the model is, not just what it guessed.
+
 ---
 
 ## Key Takeaways
 
-Logistic Regression classifies by predicting a probability, with the sigmoid function doing the work of squashing any linear combination of inputs into the 0–1 range. It is trained by minimising cross-entropy loss through gradient descent — there is no algebraic shortcut the way there is for Linear Regression. Each weight in the model is directly interpretable, telling you how strongly a given feature pulls the prediction toward one class. Despite its simplicity, it remains one of the most widely deployed classification algorithms in industry because of that combination of speed, reliability, and explainability. It is also the conceptual building block of neural networks: stack logistic units in layers, and you have a deep learning model.
+- Logistic Regression classifies by predicting a probability, with the sigmoid squashing any number into 0–1.
+- It's trained with cross-entropy loss via gradient descent, not the algebraic shortcut Linear Regression uses.
+- Each weight is directly interpretable: it shows how strongly a feature pulls toward one class.
+- It's fast, reliable, and explainable, which is why it's widely used in medicine and finance.
+- Conceptually, it's the building block of neural networks: stack logistic units in layers and you get deep learning.
 
 ---
 

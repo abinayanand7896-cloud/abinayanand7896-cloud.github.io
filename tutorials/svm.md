@@ -9,17 +9,17 @@ nav_order: 9
 
 ## What is it?
 
-A Support Vector Machine finds the hyperplane that separates two classes with the largest possible margin. The data points closest to the boundary — the support vectors — define that margin, and the algorithm's entire job is to maximise it. A wider margin means the model is less likely to be fooled by small variations in new data.
+A Support Vector Machine finds the hyperplane that separates two classes with the largest possible margin. The data points closest to the boundary, called the support vectors, define that margin, and the algorithm's entire job is to maximise it. A wider margin means the model is less likely to be fooled by small variations in new data.
 
 ---
 
 ## The Idea
 
-Among all the lines (or hyperplanes in higher dimensions) that could separate two classes, many will work — but most will hug one class too tightly, leaving little room for error. SVM takes a different approach: it searches for the boundary that sits as far as possible from both classes at once. That gap between the boundary and the nearest point from each class is called the margin, and the closest points themselves are the support vectors. Everything else in the training set is irrelevant to the final boundary — only those boundary-defining points matter.
+Among all the lines (or hyperplanes in higher dimensions) that could separate two classes, many will work. But most will hug one class too tightly, leaving little room for error. SVM takes a different approach: it searches for the boundary that sits as far as possible from both classes at once. That gap between the boundary and the nearest point from each class is called the margin, and the closest points themselves are the support vectors. Everything else in the training set is irrelevant to the final boundary. Only those boundary-defining points matter.
 
 When data is not linearly separable in its original space, SVM uses the kernel trick. A kernel function computes dot products between data points as though they had been mapped into a higher-dimensional space, without ever explicitly constructing that space. In that higher dimension, the classes may become linearly separable, so a simple flat boundary there corresponds to a curved, non-linear boundary back in the original space. The RBF (Gaussian) kernel is the most popular choice and handles a wide range of non-linear problems well.
 
-Real-world data is rarely perfectly separable, so SVM also supports a soft margin controlled by the hyperparameter C. A large C tells the model to penalise every misclassification heavily, producing a narrow margin that tries hard to classify all training points correctly. A small C tolerates more violations in exchange for a wider, more robust margin. Tuning C — typically via cross-validation — is one of the key practical decisions when using SVM.
+Real-world data is rarely perfectly separable, so SVM also supports a soft margin controlled by the hyperparameter C. A large C tells the model to penalise every misclassification heavily, producing a narrow margin that tries hard to classify all training points correctly. A small C tolerates more violations in exchange for a wider, more robust margin. Tuning C through cross-validation is one of the key practical decisions when using SVM.
 
 ---
 
@@ -84,7 +84,7 @@ Real-world data is rarely perfectly separable, so SVM also supports a soft margi
 
   </svg>
   <p style="font-size:0.85rem; color:#666; margin-top:0.5rem;">
-    The solid line is the decision boundary. Dashed lines are the margin edges. Ringed points are the support vectors — the only training examples that define the boundary.
+    The solid line is the decision boundary. Dashed lines are the margin edges. Ringed points are the support vectors, the only training examples that define the boundary.
   </p>
 </div>
 
@@ -94,20 +94,20 @@ Real-world data is rarely perfectly separable, so SVM also supports a soft margi
 
 $$\min_{\mathbf{w}, b} \frac{1}{2}\|\mathbf{w}\|^2 \quad \text{subject to } y_i(\mathbf{w}^T\mathbf{x}_i + b) \geq 1$$
 
-> **In plain English:** Find the weights $\mathbf{w}$ that define the boundary. Making $\|\mathbf{w}\|^2$ small is equivalent to making the margin wide. The constraint ensures every point is on the correct side of the margin — points with $y_i = +1$ must satisfy $\mathbf{w}^T\mathbf{x}_i + b \geq 1$ and points with $y_i = -1$ must satisfy $\mathbf{w}^T\mathbf{x}_i + b \leq -1$.
+> **In plain English:** Find the weights $\mathbf{w}$ that define the boundary. Making $\|\mathbf{w}\|^2$ small is equivalent to making the margin wide. The constraint ensures every point is on the correct side of the margin.
 
 <details>
 <summary>Show the derivation</summary>
 
 The distance from the decision boundary to the nearest point on either side turns out to be $1/\|\mathbf{w}\|$, so the total margin width is $2/\|\mathbf{w}\|$. Maximising this is equivalent to minimising $\|\mathbf{w}\|^2$, which is a convex objective and easier to work with than $\|\mathbf{w}\|$ directly.
 
-The resulting constrained quadratic programme is solved via Lagrange multipliers. Each training point $i$ gets a multiplier $\alpha_i \geq 0$, and the Karush–Kuhn–Tucker conditions show that $\alpha_i = 0$ for every point that lies strictly outside the margin. Only the support vectors — the points exactly on the margin — have $\alpha_i > 0$. This is why the model is called a Support Vector Machine: all the geometric information is concentrated in those few boundary-defining points.
+The resulting constrained quadratic programme is solved via Lagrange multipliers. Each training point $i$ gets a multiplier $\alpha_i \geq 0$, and the Karush-Kuhn-Tucker conditions show that $\alpha_i = 0$ for every point that lies strictly outside the margin. Only the support vectors, the points exactly on the margin, have $\alpha_i > 0$. This is why the model is called a Support Vector Machine.
 
-For the soft-margin version, slack variables $\xi_i \geq 0$ allow individual points to violate the margin constraint. The objective becomes
+For the soft-margin version, slack variables $\xi_i \geq 0$ allow individual points to violate the margin constraint. The objective becomes:
 
 $$\min_{\mathbf{w}, b, \boldsymbol{\xi}} \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i}\xi_i \quad \text{subject to } y_i(\mathbf{w}^T\mathbf{x}_i + b) \geq 1 - \xi_i,\; \xi_i \geq 0$$
 
-The hyperparameter $C$ trades margin width against total violation: large $C$ penalises mistakes heavily (narrow margin, risk of overfitting); small $C$ accepts more violations to widen the margin (risk of underfitting). Cross-validation is typically used to find a good value.
+The hyperparameter $C$ trades margin width against total violation. Large $C$ penalises mistakes heavily (narrow margin, risk of overfitting). Small $C$ accepts more violations to widen the margin (risk of underfitting). Cross-validation is typically used to find a good value.
 
 </details>
 
@@ -115,7 +115,7 @@ The hyperparameter $C$ trades margin width against total violation: large $C$ pe
 
 ## How It Learns
 
-Training an SVM means solving the quadratic programme described above to find the optimal weights $\mathbf{w}$ and bias $b$. The solver identifies the support vectors — the boundary-defining points — and positions the decision boundary exactly halfway between the closest points from each class. Once training is done, the support vectors are all the model needs; the rest of the training data can be discarded.
+Training an SVM means solving the quadratic programme described above to find the optimal weights $\mathbf{w}$ and bias $b$. The solver identifies the support vectors and positions the decision boundary exactly halfway between the closest points from each class. Once training is done, the support vectors are all the model needs. The rest of the training data can be discarded.
 
 For non-linear problems the kernel trick is central. Rather than explicitly mapping every point into a high-dimensional feature space (which may be infinite-dimensional for the RBF kernel), the optimisation only ever needs dot products between pairs of points. A kernel function $k(\mathbf{x}_i, \mathbf{x}_j)$ computes that dot product in the implicit high-dimensional space directly from the original coordinates. This keeps the computation tractable while still allowing highly non-linear decision boundaries in the original space.
 
@@ -123,19 +123,25 @@ For non-linear problems the kernel trick is central. Rather than explicitly mapp
 
 ## When to Use It
 
-SVMs shine in high-dimensional settings — text classification with tens of thousands of word features is a classic example where they have historically been very competitive. They also handle the regime where features outnumber samples well, which is common in genomics and certain signal-processing tasks. With the RBF kernel, they can capture complex non-linear boundaries without requiring you to engineer polynomial features by hand.
+SVMs shine in high-dimensional settings. Text classification with tens of thousands of word features is a classic example where they've historically been very competitive. They also handle the regime where features outnumber samples well, which is common in genomics and certain signal-processing tasks. With the RBF kernel, they can capture complex non-linear boundaries without requiring you to engineer polynomial features by hand.
 
-The main practical downsides are computational. Training scales roughly as $O(n^2)$ to $O(n^3)$ in the number of samples, so SVMs become slow and memory-hungry on datasets with more than a few tens of thousands of points. Feature scaling is not optional — SVMs are highly sensitive to the relative magnitudes of features, so you should always standardise inputs with `StandardScaler` before fitting. The C and kernel hyperparameters also need careful tuning, typically through cross-validation, which adds to the training cost. For large datasets or problems where you want calibrated probabilities, tree ensembles or logistic regression are usually more practical starting points.
+The main practical downsides are computational. Training scales roughly as $O(n^2)$ to $O(n^3)$ in the number of samples, so SVMs become slow and memory-hungry on datasets with more than a few tens of thousands of points. Feature scaling is not optional. SVMs are highly sensitive to the relative magnitudes of features, so you should always standardise inputs with `StandardScaler` before fitting. The C and kernel hyperparameters also need careful tuning, typically through cross-validation. For large datasets or problems where you want calibrated probabilities, tree ensembles or logistic regression are usually more practical starting points.
 
 ---
 
 ## Try It Yourself
 
+If you have not set up Python yet, start with the [Get Started guide](setup) first.
+
+This code trains an SVM with an RBF kernel on a breast cancer dataset. Notice that we scale the features first. That step is not optional with SVMs.
+
+Copy this into a cell and run it with Shift + Enter:
+
 ```python
-from sklearn.datasets import load_breast_cancer
-from sklearn.svm import SVC
+from sklearn.datasets import load_breast_cancer       # medical dataset
+from sklearn.svm import SVC                           # Support Vector Classifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler      # scale features to same range
 from sklearn.metrics import accuracy_score
 
 # Load dataset
@@ -147,10 +153,10 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Scale features — SVMs are very sensitive to feature magnitudes
+# Scale features: SVMs are very sensitive to feature magnitudes
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test  = scaler.transform(X_test)
+X_train = scaler.fit_transform(X_train)   # fit on train data, then transform
+X_test  = scaler.transform(X_test)        # transform test data using same scale
 
 # Train SVM with RBF kernel
 model = SVC(kernel='rbf', C=1.0, random_state=42)
@@ -169,11 +175,26 @@ Accuracy: 97.4%
 Number of support vectors per class: [37 60]
 ```
 
+**What each line does:**
+- `StandardScaler()`: makes every feature have mean 0 and standard deviation 1
+- `scaler.fit_transform(X_train)`: learns the scaling from training data and applies it
+- `scaler.transform(X_test)`: applies the same scaling to test data (never fit on test data)
+- `SVC(kernel='rbf', C=1.0)`: creates an SVM that uses the RBF kernel with moderate penalty
+- `model.n_support_`: shows how many support vectors the model uses from each class
+
+**What just happened?**
+
+The model found the widest possible boundary between malignant and benign tumours in a high-dimensional space. It only needed 97 support vectors out of 455 training examples. Everything else was irrelevant once the boundary was found.
+
 ---
 
 ## Key Takeaways
 
-SVMs find the decision boundary that maximises the margin between classes — a wider margin means more room for error on new data. The support vectors, the points closest to the boundary, are the only data points that matter for the final model; everything else in the training set is irrelevant once training is complete. Kernels extend this idea to non-linear problems by implicitly mapping data into higher dimensions where a linear boundary is sufficient. For high-dimensional and small-sample problems, SVMs remain a competitive option even in the age of deep learning. Always standardise your features before fitting — it is one of the most important practical steps when using this algorithm.
+- SVMs find the decision boundary that maximises the margin between classes. A wider margin means more room for error on new data.
+- The support vectors, the points closest to the boundary, are the only data points that matter once training is done.
+- Kernels extend this idea to non-linear problems by implicitly mapping data into higher dimensions.
+- Always standardise your features before fitting. This is one of the most important practical steps with SVMs.
+- For high-dimensional and small-sample problems, SVMs remain competitive even in the age of deep learning.
 
 ---
 

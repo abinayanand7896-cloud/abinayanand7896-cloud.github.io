@@ -9,15 +9,15 @@ nav_order: 3
 
 ## What is it?
 
-Linear Regression is one of the simplest and most useful tools in machine learning. Given a set of data points, it finds the best-fit straight line that describes the relationship between an input and an output — for example, how a house's size relates to its price. Once you have that line, you can use it to predict the output for any new input you give it. It's usually the first model anyone learns, and for good reason: it's fast, interpretable, and surprisingly effective.
+Linear Regression is one of the simplest and most useful tools in machine learning. Given a set of data points, it finds the best-fit straight line that describes the relationship between an input and an output. For example, how a house's size relates to its price. Once you have that line, you can use it to predict the output for any new input. It's usually the first model anyone learns, and for good reason: it's fast, interpretable, and surprisingly effective.
 
 ---
 
 ## The Idea
 
-Imagine you plot 100 houses on a graph — size on the x-axis, price on the y-axis. You can see a clear trend: as houses get bigger, prices go up. Linear Regression finds the single straight line that fits through those points as closely as possible. That line has two numbers: a slope (how much the price rises per square foot) and an intercept (the starting price when size is zero). Once those two numbers are learned from your data, you just plug in a new house size and the line tells you the predicted price.
+Imagine you plot 100 houses on a graph. Size on the x-axis, price on the y-axis. You can see a clear trend: as houses get bigger, prices go up. Linear Regression finds the single straight line that fits through those points as closely as possible. That line has two numbers: a slope (how much the price rises per square foot) and an intercept (the starting price when size is zero). Once those two numbers are learned from your data, you plug in a new house size and the line tells you the predicted price.
 
-The key insight is that the model isn't memorising your training data. It's learning a compact summary — one line — that generalises to houses it has never seen before. That's the whole game in machine learning.
+The key insight is that the model isn't memorising your training data. It's learning a compact summary, just one line, that generalises to houses it's never seen before. That's the whole game in machine learning.
 
 ---
 
@@ -67,15 +67,15 @@ $$\hat{y} = \mathbf{w}^T \mathbf{x} + b$$
 <details>
 <summary>Show the derivation</summary>
 
-We want to minimise the **Mean Squared Error (MSE)** — the average of the squared gaps between predicted and actual values:
+We want to minimise the **Mean Squared Error (MSE)**, the average of the squared gaps between predicted and actual values:
 
 $$\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
 
-To find the optimal weights, we take the derivative of MSE with respect to $\mathbf{w}$ and set it to zero. This gives the **Normal Equation** — a closed-form solution:
+To find the optimal weights, we take the derivative of MSE with respect to $\mathbf{w}$ and set it to zero. This gives the **Normal Equation**, a closed-form solution:
 
 $$\mathbf{w}^* = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}$$
 
-In practice, scikit-learn uses this (or a numerically stable variant) rather than gradient descent for small datasets. For large datasets, **Stochastic Gradient Descent (SGD)** is used instead — it updates the weights incrementally rather than solving the whole system at once.
+In practice, scikit-learn uses this (or a numerically stable variant) rather than gradient descent for small datasets. For large datasets, **Stochastic Gradient Descent (SGD)** is used instead. It updates the weights incrementally rather than solving the whole system at once.
 
 </details>
 
@@ -83,32 +83,39 @@ In practice, scikit-learn uses this (or a numerically stable variant) rather tha
 
 ## How It Learns
 
-Training Linear Regression means finding the values of $\mathbf{w}$ and $b$ that produce the smallest total prediction error across all your training examples. The model starts with arbitrary weights, computes predictions, measures how wrong they are using MSE, and then adjusts the weights to reduce that error. It repeats this process — either analytically via the Normal Equation, or iteratively via gradient descent — until the weights stop improving. Once training is done, those weights are fixed and the model is ready to predict.
+Training Linear Regression means finding the values of $\mathbf{w}$ and $b$ that produce the smallest total prediction error across all your training examples. The model starts with arbitrary weights, computes predictions, measures how wrong they are using MSE, and then adjusts the weights to reduce that error. It repeats this process until the weights stop improving. Once training is done, those weights are fixed and the model is ready to predict.
 
 ---
 
 ## When to Use It
 
-Linear Regression is the right tool when you need to predict a continuous number and you have reason to believe the relationship between your inputs and output is roughly linear. It's also the right tool when you need a model you can explain — you can look directly at the weights and say "a one-unit increase in X leads to a Y-unit increase in the output." It works poorly when the true relationship is curved or when there are complex interactions between features; in those cases, tree-based models or neural networks will outperform it. Always try Linear Regression first as a baseline before moving to something more complex.
+Linear Regression is the right tool when you need to predict a continuous number and you have reason to believe the relationship between your inputs and output is roughly linear. It's also the right tool when you need a model you can explain. You can look directly at the weights and say "a one-unit increase in X leads to a Y-unit increase in the output." It works poorly when the true relationship is curved or when there are complex interactions between features. In those cases, tree-based models or neural networks will outperform it. Always try Linear Regression first as a baseline before moving to something more complex.
 
 ---
 
 ## Try It Yourself
 
-```python
-import numpy as np
-from sklearn.linear_model import LinearRegression
+If you have not set up Python yet, start with the [Get Started guide](setup) first.
 
-# House sizes in sq ft, prices in $thousands
+This code trains a simple Linear Regression model to predict house prices from house sizes. You'll see the slope and intercept it learns, then test it on a new house.
+
+Copy this into a cell and run it with Shift + Enter:
+
+```python
+import numpy as np                                    # for numerical arrays
+from sklearn.linear_model import LinearRegression     # the model
+
+# House sizes in sq ft
 house_sizes = np.array([500, 750, 1000, 1250, 1500, 1750, 2000]).reshape(-1, 1)
+# Prices in $thousands
 house_prices = np.array([150, 200, 250, 310, 350, 400, 450])
 
-model = LinearRegression()
-model.fit(house_sizes, house_prices)
+model = LinearRegression()                  # create the model
+model.fit(house_sizes, house_prices)        # train on the data
 
-print(f"Weight (slope):   {model.coef_[0]:.4f}")
-print(f"Bias (intercept): {model.intercept_:.2f}")
-print(f"Prediction for 1600 sq ft: ${model.predict([[1600]])[0]:.1f}k")
+print(f"Weight (slope):   {model.coef_[0]:.4f}")          # how much price rises per sq ft
+print(f"Bias (intercept): {model.intercept_:.2f}")        # base price
+print(f"Prediction for 1600 sq ft: ${model.predict([[1600]])[0]:.1f}k")  # predict new value
 ```
 
 Expected output:
@@ -118,11 +125,27 @@ Bias (intercept): 62.86
 Prediction for 1600 sq ft: $337.1k
 ```
 
+**What each line does:**
+- `np.array([...]).reshape(-1, 1)`: creates the house size data as a column (scikit-learn expects this shape)
+- `LinearRegression()`: creates a blank model that's ready to learn
+- `model.fit(house_sizes, house_prices)`: trains the model by finding the best slope and intercept
+- `model.coef_[0]`: the learned slope: every extra square foot adds about $171 to the price
+- `model.intercept_`: the base price: around $62,860 when size is zero
+- `model.predict([[1600]])`: asks the trained model for its estimate on a 1600 sq ft house
+
+**What just happened?**
+
+The model looked at those seven house examples and drew the best straight line through them. It learned that every 100 extra square feet adds roughly $17,000 to the price. Now you can plug in any house size and get a price estimate instantly. That's linear regression in action.
+
 ---
 
 ## Key Takeaways
 
-Linear Regression finds the best straight line through your data by learning a slope and a bias term that minimise the average squared prediction error. It predicts continuous numbers — prices, temperatures, sales figures — and works best when the relationship between inputs and output is roughly linear. It's not just a beginner's tool: it's fast, interpretable, and often hard to beat as a baseline. When you move on to more complex models, you'll find that many of them are essentially generalisations of this same idea.
+- Linear Regression finds the best straight line through your data by learning a slope and a bias term.
+- It minimises the average squared prediction error across all training examples.
+- It works best when the relationship between inputs and output is roughly linear.
+- It's fast, interpretable, and often a strong baseline before trying complex models.
+- The weights are directly readable: each one tells you how much a feature moves the prediction.
 
 ---
 
