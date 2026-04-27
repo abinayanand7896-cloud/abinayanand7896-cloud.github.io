@@ -16,7 +16,7 @@ h1, h2, h3, h4 {
   max-width: 860px;
 }
 
-/* ── Tutorial section labels (## headings) ────────── */
+/* Tutorial section labels — deliberately small uppercase markers, not large headings */
 .main-content h2 {
   font-size: 11px;
   font-weight: 700;
@@ -40,7 +40,7 @@ h1, h2, h3, h4 {
 }
 
 /* ── Plain-English callout (blockquote) ──────────── */
-blockquote {
+.main-content blockquote {
   background: #eff6ff;
   border-left: 4px solid #2563eb;
   border-radius: 0 6px 6px 0;
@@ -50,16 +50,16 @@ blockquote {
   margin: 0.75rem 0;
 }
 
-blockquote strong {
+.main-content blockquote strong {
   color: #1e40af;
 }
 
-blockquote p {
+.main-content blockquote p {
   margin: 0;
 }
 
 /* ── Collapsible derivation (<details>) ──────────── */
-details {
+.main-content details {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -67,7 +67,7 @@ details {
   margin: 0.5rem 0;
 }
 
-details summary {
+.main-content details summary {
   color: #2563eb;
   font-weight: 600;
   font-size: 0.875rem;
@@ -75,9 +75,9 @@ details summary {
   padding: 0.25rem 0;
 }
 
-details p,
-details ul,
-details ol {
+.main-content details p,
+.main-content details ul,
+.main-content details ol {
   color: #475569;
   font-size: 0.9rem;
   margin-top: 0.5rem;
@@ -109,7 +109,7 @@ code.highlighter-rouge {
 .btn {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  color: #475569 !important;
+  color: #475569;
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.875rem;
