@@ -7,23 +7,43 @@ nav_order: 12
 
 # K-Means Clustering
 
-## What is it?
-
-K-Means Clustering is an unsupervised algorithm that partitions data into $k$ groups by repeatedly assigning each point to its nearest cluster centre (centroid) and moving the centroid to the mean of its assigned points. It iterates until the assignments stop changing. Unlike classification, there are no labels. The algorithm discovers structure in the data on its own.
+Spotify groups its 600 million users into listener types so it can recommend the right playlists. Nobody labelled each user manually. The algorithm found the groups on its own. That is clustering, and K-Means is the most popular way to do it.
 
 ---
 
-## The Idea
+## What is K-Means Clustering?
 
-K-Means works through a beautifully simple two-step loop. First, every data point is assigned to the centroid it's closest to. Whichever cluster centre sits nearest in space claims that point. Second, each centroid is relocated to the mean position of all the points that were just assigned to it. The centroid literally moves to the "centre of gravity" of its current members. These two steps repeat until no point changes its cluster assignment.
+K-Means Clustering is a way to automatically group data into $k$ clusters, where similar items end up in the same group. You do not tell it what the groups should be. You just say how many groups you want, and the algorithm figures out the rest.
 
-Because each step nudges the configuration toward a lower total within-cluster sum of squared distances, the algorithm is guaranteed to stop. But it may settle at a local minimum rather than the global best solution. Where the centroids start out matters enormously. Random initialisation can land them in unfortunate positions and produce lopsided or overlapping clusters. K-Means++ was introduced to address this: it spreads the initial centroids out by choosing each successive starting point with a probability proportional to its squared distance from the nearest already-chosen centroid. This makes convergence faster and the final result more reliable.
+**New word: unsupervised** means the algorithm works without labels. It does not know what the "right answer" is. It just looks for natural groups in the data.
 
-The other key challenge is choosing $k$ before you begin. The elbow method offers a practical heuristic: run K-Means for several values of $k$, record the total inertia (within-cluster sum of squares) for each, and plot the results. The curve typically drops steeply at first and then flattens out. The "elbow", the value of $k$ where the improvement starts to level off, is a good candidate for the right number of clusters.
+**New word: centroid** is the centre point of a cluster. Think of it as the average member of the group.
 
 ---
 
-## Visual
+## A simple way to think about it
+
+Imagine dropping 100 grains of rice onto a table at random. You want to sort them into 3 piles.
+
+Here is what K-Means does. It places 3 imaginary pins on the table at random positions. Each grain of rice joins the pile belonging to the nearest pin. Then each pin moves to the middle of its pile. Then every grain re-checks which pin is now closest and rejoins accordingly. The pins keep moving until they stop.
+
+The result is 3 tidy piles where each grain is grouped with the grains most similar to it. Nobody told the algorithm which grains belong together. It worked it out by repeatedly asking: "which centre is closest?"
+
+The only question you have to answer beforehand is: how many piles do you want? That number is $k$.
+
+---
+
+## How it works, step by step
+
+1. Choose how many clusters you want ($k$) and place $k$ starting centre points at random positions.
+2. Assign every data point to the nearest centre.
+3. Move each centre to the average position of all the points assigned to it.
+4. Repeat steps 2 and 3 until no point changes its cluster assignment.
+5. The algorithm has converged. The clusters are ready.
+
+---
+
+## See it visually
 
 <div style="display:flex; flex-direction:column; align-items:center; margin: 1.5rem 0;">
 <svg width="320" height="260" viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" style="background:#f8f9fa; border-radius:8px; border:1px solid #dee2e6;">
@@ -88,105 +108,97 @@ The other key challenge is choosing $k$ before you begin. The elbow method offer
 <p style="font-size:0.85rem; color:#666; margin-top:0.5rem; text-align:center;">K=3: each colour is a cluster, stars are centroids</p>
 </div>
 
+Each colour is a cluster. The star in the middle of each cluster is the centroid, the average position of all points in that group. Every dot has been assigned to the nearest star.
+
 ---
 
-## The Math
+## The maths (do not panic)
+
+K-Means tries to minimise this:
 
 $$\arg\min_S \sum_{i=1}^{k} \sum_{\mathbf{x} \in S_i} \|\mathbf{x} - \boldsymbol{\mu}_i\|^2$$
 
-> **In plain English:** Find the assignment of points to clusters $S_1, \dots, S_k$ that minimises the total squared distance from each point to its cluster's centre. The centre $\boldsymbol{\mu}_i$ is the mean of all points in cluster $i$.
+> **In plain English:** For each cluster $S_i$, measure the distance from every point in it to the cluster's centre $\boldsymbol{\mu}_i$. Square those distances and add them all up. K-Means tries to find the grouping that makes this total as small as possible. Smaller means every point is close to its cluster's centre, which means tighter, cleaner clusters.
 
-<details><summary>Show the derivation</summary>
+<details>
+<summary>Show more detail</summary>
 
-This objective is NP-hard to optimise globally. Finding the true best partition over all possible assignments is computationally intractable for large datasets. Lloyd's algorithm sidesteps this by alternating between two exact sub-steps, each of which decreases (or leaves unchanged) the total objective.
+Finding the perfect grouping is extremely hard to do in one go. K-Means takes a shortcut by alternating between two steps, each of which improves the answer.
 
-In the assignment step, each point is sent to its nearest centroid. For a fixed set of centroids, this is the provably optimal assignment.
+In the assignment step, every point is sent to its nearest centre. This is the best possible assignment given the current centres.
 
-In the update step, each centroid is moved to the mean of its assigned points. For a fixed assignment, the mean is the unique point that minimises the sum of squared distances to a set of points, so this step is also optimal given the current assignment.
+In the update step, each centre moves to the average position of its assigned points. This is the best possible position for a centre given the current assignment.
 
-Because each step is individually optimal and the objective is bounded below by zero, the alternation is guaranteed to converge to a local minimum. Different initialisations can converge to different local minima, which is why K-Means++ and multiple random restarts (controlled by `n_init` in sklearn) are standard practice. The run with the lowest final inertia is returned as the result.
+Because each step makes the total squared distance smaller (or keeps it the same), and because the total cannot go below zero, the loop is guaranteed to stop eventually.
+
+One practical tip: always run K-Means several times with different random starting positions and keep the best result. This reduces the chance of landing in a poor solution caused by unlucky starting positions.
 
 </details>
 
 ---
 
-## How It Learns
+## Run the code yourself
 
-K-Means alternates between two steps until convergence. In the assignment step, every training point is assigned to the centroid it's closest to, measured by Euclidean distance. In the update step, each centroid is moved to the mean position of all the points assigned to it. The centroid is literally redefined as the average of its current members.
+This code groups iris flowers into 3 clusters without looking at the species labels. Then it checks how well those discovered groups match the true species.
 
-Because each step strictly decreases (or leaves unchanged) the total within-cluster sum of squares, and because there are only finitely many possible ways to assign $n$ points to $k$ clusters, the algorithm is guaranteed to converge in a finite number of iterations. In practice it's usually fast, often converging in tens of iterations even on large datasets.
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook.
 
-Sklearn runs K-Means multiple times with different initialisations, controlled by the `n_init` parameter, and returns the solution with the lowest inertia. This guards against unlucky starting positions leading to a poor local minimum.
-
----
-
-## When to Use It
-
-K-Means is the go-to first attempt for clustering tabular data. It's fast, scales well to large datasets, and produces interpretable results. The centroids describe the "typical" member of each cluster, making them easy to explain to stakeholders.
-
-The main limitations are that you must choose $k$ before you begin, the algorithm assumes roughly spherical clusters of similar size, and it uses Euclidean distance so feature scaling matters. If your features have very different ranges, standardise them first, otherwise the clustering will be dominated by whichever feature has the largest absolute values.
-
-For data with elongated, curved, or irregularly shaped clusters, DBSCAN or Gaussian Mixture Models will usually fit better.
-
----
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](setup) first.
-
-This code clusters the iris flowers into 3 groups without using the species labels. Then it checks how well those groups match the true species.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
+# Import the tools we need
 from sklearn.cluster import KMeans                      # the clustering model
-from sklearn.datasets import load_iris                  # classic flower dataset
-from sklearn.preprocessing import StandardScaler        # scale features
-from sklearn.metrics import adjusted_rand_score         # measure cluster quality
+from sklearn.datasets import load_iris                  # 150 flowers, 4 measurements each
+from sklearn.preprocessing import StandardScaler        # rescale features before clustering
+from sklearn.metrics import adjusted_rand_score         # measures how good the clusters are
 
-# Load iris: ignore the labels during clustering (that's the whole point of unsupervised)
+# Load iris data - we will NOT use the species labels during clustering
 iris = load_iris()
 X = iris.data
-y_true = iris.target   # we'll use this later only to evaluate quality
+y_true = iris.target   # we will only use this at the end to check our results
 
-# Scale features: distance-based algorithms are sensitive to feature ranges
+# Rescale features: K-Means uses distances, so fair scaling matters
 X_scaled = StandardScaler().fit_transform(X)
 
-# Fit K-Means: find 3 clusters, use K-Means++ initialisation for better starts
+# Create and run K-Means: find 3 clusters, try 10 different starting positions
 km = KMeans(n_clusters=3, init='k-means++', n_init=10, random_state=42)
-km.fit(X_scaled)   # alternates assign/update until convergence
+km.fit(X_scaled)   # runs the assign-then-move loop until clusters stop changing
 
-print(f"Inertia: {km.inertia_:.2f}")   # total within-cluster sum of squares
-print(f"Adjusted Rand Score: {adjusted_rand_score(y_true, km.labels_):.3f}")  # 1.0 = perfect, 0 = random
+# Report how tight the clusters are and how well they match true species
+print(f"Inertia: {km.inertia_:.2f}")   # lower = tighter clusters
+print(f"Adjusted Rand Score: {adjusted_rand_score(y_true, km.labels_):.3f}")  # 1.0 = perfect match
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
+
+You should see:
 ```
 Inertia: 139.82
 Adjusted Rand Score: 0.730
 ```
 
 **What each line does:**
-- `StandardScaler().fit_transform(X)`: rescales all features to the same range before clustering
-- `KMeans(n_clusters=3, init='k-means++')`: creates a K-Means model with smarter starting positions
-- `n_init=10`: runs the whole algorithm 10 times with different random starts, keeps the best result
-- `km.fit(X_scaled)`: runs the assign/update loop until clusters stop changing
-- `km.inertia_`: total squared distance from each point to its centroid (lower is better)
-- `adjusted_rand_score(y_true, km.labels_)`: compares the found clusters to the true species labels
+- `load_iris()`: loads 150 flower measurements (the labels are set aside and not used during clustering)
+- `StandardScaler().fit_transform(X)`: rescales all measurements so none dominate the distance calculation
+- `KMeans(n_clusters=3, init='k-means++')`: creates a K-Means model, with smarter-than-random starting positions
+- `n_init=10`: runs the whole process 10 times with different starts, then keeps the best result
+- `km.fit(X_scaled)`: runs the assign-and-move loop until the clusters stop changing
+- `km.inertia_`: the total squared distance from each point to its cluster centre (lower is better)
+- `adjusted_rand_score(...)`: compares the discovered clusters to the true species labels. A score of 1.0 is a perfect match and 0 is no better than random.
 
 **What just happened?**
 
-The algorithm never saw the species labels, but it still found clusters that match them reasonably well. An Adjusted Rand Score of 0.73 means the clustering is much better than random (which would score near 0). It's not perfect because two iris species overlap heavily in feature space. But it found real structure without any supervision.
+The algorithm never saw the flower species labels. It just looked at 4 measurements and grouped similar flowers together. The Adjusted Rand Score of 0.73 means its groupings match the true species much better than chance. It is not perfect because two of the three iris species look very similar in measurement space, but it found real structure without any guidance.
 
 ---
 
-## Key Takeaways
+## Quick recap
 
-- K-Means partitions data into $k$ clusters by alternating between assigning points to the nearest centroid and moving centroids to the mean of their assigned points.
-- It's fast, interpretable, and guaranteed to converge, but it may find a local minimum rather than the global best.
-- Use K-Means++ initialisation and run with multiple random starts for more reliable results.
-- Always scale features before clustering. Euclidean distance is sensitive to unscaled magnitudes.
-- Best suited to roughly spherical clusters of similar size. For irregular shapes, try DBSCAN or Gaussian Mixture Models.
+- K-Means groups data into $k$ clusters by repeatedly assigning each point to the nearest centre and then moving the centre to the average of its group.
+- You must choose $k$ before you start. A common approach is to try several values and pick the one where adding more clusters stops helping much.
+- Always rescale your features first. K-Means uses distances, so features with large numbers will dominate otherwise.
+- It works best when the natural groups in the data are roughly round and similar in size.
+- It is usually the first clustering method to try on any new dataset because it is fast and easy to understand.
 
 ---
 

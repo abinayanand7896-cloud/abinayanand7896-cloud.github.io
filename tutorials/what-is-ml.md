@@ -7,31 +7,41 @@ nav_order: 1
 
 # What is Machine Learning?
 
-## What is it?
-
-Machine learning lets computers learn patterns from data instead of following rules that a programmer wrote by hand. Instead of telling a computer exactly what to do in every situation, you show it thousands of examples and it figures out the logic itself.
-
-A spam filter is the classic example. Instead of writing rules like "flag any email with the word winner in it", you show the system thousands of spam emails and thousands of normal ones. It studies them and learns to tell them apart on its own. No rules. Just examples.
+Have you ever noticed that YouTube seems to know exactly which video you want to watch next? Or that Gmail moves junk mail into your spam folder without you doing anything? That is machine learning at work, quietly learning your habits from millions of examples.
 
 ---
 
-## The Idea
+## What is Machine Learning?
 
-Traditional programming works like a recipe. You write the instructions, the computer follows them exactly. That works fine for simple tasks. But try writing a recipe for "recognise a cat in a photo" or "predict whether this loan will default." The patterns are too complex, too numerous, too subtle. You cannot write enough rules to cover everything.
+Machine learning is a way for computers to learn from examples instead of following instructions a programmer wrote by hand. You show the computer thousands of examples, and it figures out the pattern on its own.
 
-Machine learning flips the approach. Instead of rules, you hand over data, lots of examples of inputs paired with the right answers, and let the algorithm find the patterns itself. The rules emerge from the data rather than from your head.
+Think of spam email. Instead of a programmer writing rules like "flag every email with the word 'winner'", you just show the system thousands of spam emails and thousands of normal emails. It studies them and learns to tell them apart. No rules. Just examples.
 
-Every ML system you will ever encounter has three parts:
-
-1. **Data**: the examples the system learns from
-2. **Model**: a mathematical structure that can represent patterns
-3. **Training**: the process of feeding data to the model until its predictions become accurate
-
-Get those three things right and the model will generalise. It will make good predictions on inputs it has never seen before.
+**New word: model.** In machine learning, a "model" is just the thing the computer builds after studying the examples. It is what makes new predictions later.
 
 ---
 
-## Visual
+## A simple way to think about it
+
+Imagine you are learning to recognise dogs. Nobody gave you a rulebook. Instead, you saw hundreds of dogs as a child, and over time your brain picked up the pattern: four legs, fur, a tail, barks. Now you can recognise a dog you have never seen before.
+
+Machine learning works the same way. You show the computer hundreds (or millions) of examples, and it builds its own internal pattern. Once training is done, it can recognise things it has never seen.
+
+The big difference from normal computer programs is this: in normal programming, a person writes every rule. In machine learning, the computer writes its own rules by studying the data.
+
+---
+
+## How it works, step by step
+
+1. Collect examples, like thousands of emails labelled "spam" or "not spam"
+2. Choose a model, which is a blank structure that is ready to learn
+3. Train the model by showing it all the examples over and over
+4. The model adjusts itself each time it gets something wrong
+5. Once training is finished, the model is ready to make predictions on new examples it has never seen
+
+---
+
+## See it visually
 
 ```mermaid
 graph LR
@@ -49,92 +59,75 @@ graph LR
   end
 ```
 
----
-
-## The Math
-
-This tutorial is conceptual. The equations start in the next one. Every formula in this series has a plain-English translation right next to it, so you will never be left staring at symbols without knowing what they mean.
+The left side shows traditional programming: a person writes all the rules. The right side shows machine learning: the computer receives examples and builds its own rules automatically.
 
 ---
 
-## How It Learns
+## The maths (do not panic)
 
-There is no single learning algorithm. The field has dozens. But they all share the same loop:
-
-1. The model makes a prediction
-2. The system measures how wrong that prediction was
-3. It adjusts the model slightly to reduce the error
-4. Repeat thousands of times
-
-By the time training finishes, the model has compressed everything useful from your examples into a set of numbers it can use to handle new inputs. It did not memorise your data. It learned the pattern behind it.
+This tutorial is about the big picture. The equations start in the next tutorial. Every formula in this series has a plain-English translation right next to it, so you will never be left staring at symbols without knowing what they mean.
 
 ---
 
-## When to Use It
+## Run the code yourself
 
-Machine learning earns its place when the patterns in your data are too complex to write as explicit rules. If you could solve the problem with a handful of if/else statements, just do that. It will be faster, cheaper, and easier to debug.
+This code will train a tiny model to identify a flower species from its measurements. The model will study 150 flowers and then name a flower it has never seen before.
 
-But when the task involves images, language, fraud detection, or anything where the rules would number in the thousands, ML is the right tool. One catch: it needs a decent amount of data to work well. On a tiny dataset, a simple hand-crafted rule usually beats a learned model.
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook. (Or use Jupyter if you followed the [Get Started guide](setup).)
 
----
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](setup) first. It takes 5 minutes.
-
-Copy this code into a Colab cell (or Jupyter notebook) and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
-# Load a built-in dataset of flowers with measurements
+# Load the iris flower dataset: 150 flowers with petal and sepal measurements
 from sklearn.datasets import load_iris
 
-# Load a simple ML model that makes decisions like a flowchart
+# Load a simple model that makes decisions by asking yes/no questions
 from sklearn.tree import DecisionTreeClassifier
 
 # Step 1: Load the data
 data = load_iris()
-# data.data contains measurements (petal size, sepal size) for 150 flowers
-# data.target contains the species label: 0, 1, or 2
+# data.data contains the flower measurements (petal size, sepal size) for all 150 flowers
+# data.target contains the species label for each flower: 0, 1, or 2
 
-# Step 2: Train the model on all 150 flowers
+# Step 2: Train the model. Show it all 150 flowers so it can learn the pattern
 model = DecisionTreeClassifier()
 model.fit(data.data, data.target)
 
-# Step 3: Ask it to classify a new flower we have never shown it
-# [5.1, 3.5, 1.4, 0.2] means: sepal length 5.1cm, width 3.5cm, petal length 1.4cm, width 0.2cm
+# Step 3: Ask the model to identify a new flower it has never seen before
+# These measurements mean: sepal length 5.1cm, width 3.5cm, petal length 1.4cm, width 0.2cm
 new_flower = [[5.1, 3.5, 1.4, 0.2]]
-prediction_index = model.predict(new_flower)[0]
+prediction_index = model.predict(new_flower)[0]  # get the predicted species number
 
-# Convert the number (0, 1, or 2) into the actual species name
+# Convert the species number (0, 1, or 2) into the actual species name
 print(data.target_names[prediction_index])
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
 
+You should see:
 ```
 setosa
 ```
 
 **What each line does:**
-
-- `load_iris()` gives us a dataset of 150 flowers with their measurements and correct labels
-- `DecisionTreeClassifier()` creates a model that learns by asking yes/no questions about the measurements
-- `model.fit(...)` trains the model, it studies all 150 examples and learns the patterns
-- `model.predict(...)` uses what it learned to classify a brand new flower
-- The output `setosa` is the species name the model predicted
+- `load_iris()`: loads a built-in dataset of 150 flowers, each one already labelled with its correct species name
+- `DecisionTreeClassifier()`: creates a blank model that learns by asking yes/no questions about the measurements
+- `model.fit(data.data, data.target)`: trains the model by showing it all 150 labelled examples
+- `model.predict(new_flower)`: uses what the model learned to identify a brand new flower
+- `data.target_names[...]`: converts the prediction number (0, 1, or 2) into a human-readable species name
 
 **What just happened?**
 
-The model saw 150 labelled flowers during training. It learned that flowers with short petals (like `petal length 1.4cm`) tend to be setosa. When you gave it a new flower with similar measurements, it predicted setosa correctly. You never wrote any rule about petal lengths. The model figured it out from the data.
+The model studied 150 flowers during training. It noticed that flowers with very short petals, like the one you gave it, tend to be the setosa species. When you gave it a new flower with those same measurements, it predicted setosa correctly. You never wrote any rule about petal lengths. The model worked it out from the data on its own. That is exactly what machine learning means.
 
 ---
 
-## Key Takeaways
+## Quick recap
 
-- Machine learning replaces hand-written rules with patterns learned from data
-- Every ML system needs three things: data, a model, and a training process
-- Once trained, the model generalises: it makes predictions on inputs it has never seen
-- This series covers the full journey, from the simplicity of linear regression all the way to deep learning, with every concept grounded in working code
+- Machine learning lets computers learn patterns from examples instead of following hand-written rules
+- Every machine learning system needs three things: data (the examples), a model (the blank structure), and training (the learning process)
+- Once trained, the model can make predictions on inputs it has never seen before
+- This series covers the full journey, from simple linear regression all the way to advanced methods, with every concept grounded in working code
 
 ---
 

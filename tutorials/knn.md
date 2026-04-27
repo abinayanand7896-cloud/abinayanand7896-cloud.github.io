@@ -7,19 +7,45 @@ nav_order: 10
 
 # K-Nearest Neighbours
 
-## What is it?
+Have you ever asked a friend "should I watch this show?" and they said "well, your three closest friends all love it, so you probably will too"? That is exactly how this algorithm works.
 
-K-Nearest Neighbours classifies a new data point by looking at the $k$ training points closest to it and taking a majority vote of their labels. There's no training phase. The algorithm simply memorises the training set and uses distance to classify at prediction time. It's one of the simplest and most intuitive machine learning algorithms.
+---
 
-## The Idea
+## What is K-Nearest Neighbours?
 
-KNN is often called a "lazy learner" because it does no work upfront. At prediction time it calculates the distance from the new point to every training point, picks the $k$ closest ones, and returns the most common class among them (or the average value for regression). The key insight is that similar things tend to have similar labels, and distance is a useful proxy for similarity.
+K-Nearest Neighbours (KNN) is a way for a computer to make decisions by looking at similar examples it has already seen. When it needs to classify something new, it finds the $k$ most similar items in its memory and takes a vote.
 
-The choice of $k$ is the critical hyperparameter. With $k=1$ the model is extremely flexible. It memorises every training point exactly, but it overfits badly to noise. As $k$ grows, each prediction averages over more neighbours, smoothing out noise but potentially missing real local patterns. The right value of $k$ is usually found by cross-validation, and a small odd number like 3 or 5 is a common starting point.
+**New word: classify** means sorting something into a group or category. For example, deciding if an email is spam or not spam is a classification task.
 
-Feature scaling matters enormously for KNN. If one feature ranges from 0 to 1000 and another from 0 to 1, the first feature will dominate every distance calculation simply because its raw values are larger. Always standardise or normalise features before using KNN so that every dimension contributes fairly to the distance.
+**New word: k** is just a number you choose. If $k = 3$, the algorithm looks at the 3 most similar examples. If $k = 5$, it looks at 5.
 
-## Visual
+---
+
+## A simple way to think about it
+
+Imagine you move to a new town and want to know if a neighbourhood is friendly. You do not know anyone yet.
+
+So you walk around and find the 5 houses closest to the one you are considering. You knock on each door and ask: "Is this a friendly street?" Four say yes, one says no. You conclude: probably friendly.
+
+That is KNN. You did not memorise a rule. You just looked at nearby examples and took a vote.
+
+The only two things you need to decide are:
+- **How many neighbours to ask (k):** Ask too few and one unusual person can sway you. Ask too many and you include people who live far away and are not really relevant.
+- **How to measure "nearby":** In real life that means distance in metres. In machine learning it usually means measuring how different two sets of numbers are.
+
+---
+
+## How it works, step by step
+
+1. The algorithm stores every training example it has seen, including its label (like "spam" or "not spam").
+2. A new, unlabelled example arrives.
+3. The algorithm measures the distance from that new example to every stored example.
+4. It picks the $k$ closest examples (the nearest neighbours).
+5. It takes a vote among those $k$ neighbours and predicts the most common answer.
+
+---
+
+## See it visually
 
 <div style="display:flex;justify-content:center;margin:1.5rem 0;">
 <svg width="320" height="280" viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" style="font-family:sans-serif;background:#f8f9fa;border-radius:8px;border:1px solid #dee2e6;">
@@ -77,95 +103,99 @@ Feature scaling matters enormously for KNN. If one feature ranges from 0 to 1000
 </svg>
 </div>
 
-## The Math
+The green diamond is the new unknown point. The dashed circle shows the 3 nearest neighbours. Two are blue and one is orange, so the algorithm votes: Class A wins. The new point gets labelled blue.
+
+---
+
+## The maths (do not panic)
+
+Here is how the algorithm measures "distance" between two points:
 
 $$d(\mathbf{x}, \mathbf{x'}) = \sqrt{\sum_{j=1}^{p}(x_j - x'_j)^2}$$
 
-> **In plain English:** The distance between two points is the square root of the sum of squared differences in each feature, ordinary Euclidean distance. The $k$ points with the smallest distance to the query point are the neighbours that vote.
+> **In plain English:** To find how far apart two examples are, subtract each feature value, square the differences so negatives become positive, add them all up, then take the square root. This is just the ruler distance you learned in school, extended to as many features as you have.
 
 <details>
-<summary>Show the derivation</summary>
+<summary>Show more detail</summary>
 
-Euclidean distance is the $\ell_2$ norm $\|\mathbf{x} - \mathbf{x'}\|_2$. It is the most common choice, but other metrics are widely used too. Manhattan distance uses the $\ell_1$ norm, the sum of absolute differences rather than squared differences, and is more robust to outliers in individual features. Minkowski distance generalises both as the $\ell_p$ norm for any $p \geq 1$.
+This formula is called Euclidean distance. It is the same formula you use to find the straight-line distance between two points on a map.
 
-For text and other sparse high-dimensional data, cosine similarity is often preferred because it measures the angle between vectors rather than their absolute separation, making it invariant to the magnitude of feature values.
+There are other ways to measure distance too. Manhattan distance adds up the differences without squaring them first. Cosine similarity measures the angle between two examples rather than their separation. Different tasks call for different measures, but Euclidean is the most common starting point.
 
-The choice of metric can significantly affect which points are considered "nearest," and there is no universally correct answer. One important caveat applies to all metrics: in very high dimensions, the distances between points tend to become nearly equal. This is known as the **curse of dimensionality**, and it is one of the main reasons KNN struggles when $p$ is large. As the number of features grows, more and more data is needed to keep the neighbourhood dense enough to be meaningful.
+One important warning: if one feature uses very large numbers (like salary in thousands) and another uses very small numbers (like age), the large-number feature will dominate the distance calculation unfairly. Always rescale your features before using KNN so every feature contributes equally.
 
 </details>
 
-## How It Learns
+---
 
-KNN has no training phase in the traditional sense. The algorithm simply stores the entire training set in memory, and all computation is deferred to prediction time. When a prediction is requested, the algorithm computes the distance from the query point to every stored point, sorts them by distance, selects the $k$ nearest, and returns the majority class among those neighbours.
+## Run the code yourself
 
-The computational cost of this brute-force approach is $O(n \cdot p)$ per prediction, where $n$ is the number of training points and $p$ is the number of features. For large datasets this becomes expensive, because every new query must scan the entire training set. In practice, data structures like KD-trees and ball trees organise the training points spatially, which can reduce the search cost to $O(p \log n)$ for low-dimensional data. Scikit-learn selects the appropriate algorithm automatically based on the size and dimensionality of the dataset.
+This code teaches KNN to identify which species of flower an iris belongs to, based on measurements of its petals and sepals. The model never writes a rule. It simply memorises all the training flowers and checks which ones are most similar when a new flower arrives.
 
-## When to Use It
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook.
 
-KNN works well when the decision boundary is irregular and the dataset is small enough that prediction time is acceptable. It makes no assumptions about the underlying data distribution, which gives it a natural flexibility that parametric models lack. It also adapts seamlessly to multi-class problems. There's nothing special to change, because the majority vote mechanism handles any number of classes.
-
-The main limitations are prediction-time cost rather than training-time cost, sensitivity to feature scale and to irrelevant features that pollute the distance calculation, and degraded performance as the number of dimensions grows. KNN is often used as a baseline to test whether a more complex model is actually adding value.
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](setup) first.
-
-This code trains a KNN classifier on the iris dataset. Notice that we scale the features first, which is essential for KNN to work properly.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
-from sklearn.datasets import load_iris                  # classic flower dataset
-from sklearn.neighbors import KNeighborsClassifier      # the model
-from sklearn.model_selection import train_test_split    # split data
-from sklearn.preprocessing import StandardScaler        # scale features
-from sklearn.metrics import accuracy_score              # measure accuracy
+# Import the tools we need
+from sklearn.datasets import load_iris                  # a built-in dataset of 150 flowers
+from sklearn.neighbors import KNeighborsClassifier      # the KNN model
+from sklearn.model_selection import train_test_split    # splits data into train and test
+from sklearn.preprocessing import StandardScaler        # rescales features to be fair
+from sklearn.metrics import accuracy_score              # measures how often we are right
 
-# Load the Iris dataset
+# Load the Iris dataset (150 flowers, 4 measurements each, 3 species)
 data = load_iris()
 X, y = data.data, data.target
 
-# Split into train and test sets
+# Split data: 80% for training, 20% for testing
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Always scale features before KNN: unscaled features distort distances
+# Rescale features so no single measurement dominates the distance calculation
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)   # learn scale from train data
-X_test = scaler.transform(X_test)         # apply same scale to test data
+X_train = scaler.fit_transform(X_train)   # learn the scale from training data
+X_test = scaler.transform(X_test)         # apply the same scale to test data
 
-# Train with k=5: each prediction is a vote among 5 nearest neighbours
+# Create a KNN model that votes among 5 nearest neighbours
 model = KNeighborsClassifier(n_neighbors=5)
-model.fit(X_train, y_train)               # "training" just stores the data
+model.fit(X_train, y_train)               # "training" just stores all the data
 
-predictions = model.predict(X_test)       # at prediction time, finds 5 nearest neighbours
+# Ask the model to predict species for the test flowers
+predictions = model.predict(X_test)
 print(f"Accuracy: {accuracy_score(y_test, predictions) * 100:.1f}%")
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
 
+You should see:
 ```
 Accuracy: 100.0%
 ```
 
 **What each line does:**
-- `StandardScaler()`: rescales features so no single one dominates distance calculations
+- `load_iris()`: loads a famous dataset of 150 iris flowers with 4 petal/sepal measurements each
+- `train_test_split(...)`: shuffles the data and sets aside 20% to test the model later
+- `StandardScaler()`: rescales each feature so distances are fair across all measurements
 - `KNeighborsClassifier(n_neighbors=5)`: creates a KNN model that uses 5 neighbours for each vote
-- `model.fit(X_train, y_train)`: just stores the training data (no actual training happens)
-- `model.predict(X_test)`: for each test point, finds the 5 nearest training points and takes a majority vote
+- `model.fit(X_train, y_train)`: stores all training flowers in memory (no actual learning happens yet)
+- `model.predict(X_test)`: for each test flower, finds the 5 nearest training flowers and takes a vote
+- `accuracy_score(...)`: compares predictions to the true species labels and reports the percentage correct
 
 **What just happened?**
 
-The model looked at the 5 nearest training flowers for each test flower and predicted the most common class among them. It got 100% right on this dataset. Try changing `n_neighbors` to 1 and then to 20 and see how accuracy changes. That's the k tradeoff in action.
+The model memorised 120 training flowers. When it saw each of the 30 test flowers, it found the 5 most similar training flowers and predicted the most common species among them. It got every single one right. Try changing `n_neighbors` to 1 or to 20 and see how the accuracy changes. That is the key trade-off: too few neighbours and one unusual example can throw you off; too many and you start including flowers that are not really similar at all.
 
-## Key Takeaways
+---
 
-- KNN classifies by finding the k nearest training points and taking a majority vote. No training required.
-- Always standardise features before using KNN, or unscaled features will dominate the distance calculations.
-- Use cross-validation to choose k. Small k overfits, large k underfits.
-- It's simple and surprisingly competitive on small, well-scaled datasets with non-linear boundaries.
-- It struggles in high dimensions because distances become nearly meaningless as features pile up.
+## Quick recap
+
+- KNN makes predictions by finding the $k$ most similar training examples and taking a majority vote among them.
+- There is no training phase. The algorithm simply stores all examples and does its work when a new one arrives.
+- Always rescale your features first, otherwise features with large numbers will dominate the distance calculation.
+- Choosing $k$ is the main decision: small $k$ reacts to individual examples, large $k$ looks at broader patterns.
+- It works surprisingly well on small datasets where the pattern in the data is clear and consistent.
 
 ---
 
