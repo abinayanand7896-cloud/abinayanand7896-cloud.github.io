@@ -1,108 +1,121 @@
 ---
 layout: default
-title: Multilayer Perceptron
+title: Multi-Layer Perceptron
 parent: Deep Learning
 nav_order: 2
 ---
 
-# Multilayer Perceptron (MLP)
+# Multi-Layer Perceptron
 
-## Simple Explanation
+## What is it?
 
-An MLP is the simplest kind of neural network — a stack of layers where every unit in one layer is connected to every unit in the next. It's the "vanilla" neural network. Before CNNs and RNNs, nearly all neural network work used this design.
-
-Think of it as a pipeline: data goes in one end, passes through several transformation layers, and a prediction comes out the other end.
+A Multi-Layer Perceptron (MLP) is a neural network with one or more hidden layers, making it capable of learning non-linear decision boundaries. It is the simplest form of a "deep" neural network and forms the backbone of fully-connected architectures used for tabular data and as components inside larger models.
 
 ---
 
-## How It Works
+## The Idea
 
-1. Input layer receives your data (one unit per feature)
-2. Hidden layers apply learned transformations (matrix multiplication + activation function)
-3. Output layer produces predictions (one unit per class for classification)
-4. During training, backpropagation adjusts all weights to minimize prediction error
+The perceptron is the building block — a single neuron that takes a weighted sum of its inputs and outputs either 0 or 1. One perceptron can only draw a straight line through the feature space, which limits it to linearly separable problems. Add a hidden layer and suddenly the network can combine those lines into curves and regions. Add more hidden layers and the network builds increasingly abstract representations of the input.
 
-Common activation functions:
-- **ReLU** — "If the value is negative, set it to 0. Otherwise, keep it." (Most widely used in hidden layers)
-- **Sigmoid** — Squashes output to 0–1. Used in binary output layers.
-- **Softmax** — Converts outputs to probabilities that sum to 1. Used for multi-class output layers.
+The "multi-layer" part is what unlocks expressive power. A shallow MLP (one hidden layer) is a universal function approximator — it can in principle represent any continuous function, given enough neurons. In practice, deeper networks with fewer neurons per layer are more parameter-efficient and often generalise better.
+
+The activation function between layers is critical. ReLU ($\max(0, x)$) is the modern default — it is fast, avoids vanishing gradients better than sigmoid or tanh, and works well in practice. Each hidden layer applies ReLU to its weighted sums, introducing the non-linearity that makes deep representations possible.
+
+---
+
+## Visual
+
+```mermaid
+graph LR
+  subgraph Input
+    I1((x₁)) & I2((x₂)) & I3((x₃))
+  end
+  subgraph H1["Hidden Layer 1 (ReLU)"]
+    A((h₁)) & B((h₂)) & C((h₃)) & D((h₄))
+  end
+  subgraph H2["Hidden Layer 2 (ReLU)"]
+    E((h₅)) & F((h₆)) & G((h₇))
+  end
+  subgraph Output
+    O((ŷ))
+  end
+  I1 & I2 & I3 --> A & B & C & D
+  A & B & C & D --> E & F & G
+  E & F & G --> O
+```
+
+---
+
+## The Math
+
+$$\mathbf{a}^{(l)} = f\!\left(\mathbf{W}^{(l)}\mathbf{a}^{(l-1)} + \mathbf{b}^{(l)}\right)$$
+
+> **In plain English:** Each layer takes the output of the previous layer, applies a linear transformation (weights + bias), then applies the activation function $f$. Repeating this for $L$ layers produces the final prediction.
+
+<details><summary>Show the derivation</summary>
+
+The full forward pass for an MLP with $L$ layers starts with $\mathbf{a}^{(0)} = \mathbf{x}$, then computes $\mathbf{a}^{(l)}$ for $l = 1, \dots, L$ using the formula above. The output layer typically uses a different activation — softmax for multi-class classification, sigmoid for binary, or linear (no activation) for regression.
+
+Loss is computed at the output, and backpropagation computes $\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}}$ for every layer via the chain rule. The gradient of layer $l$ depends on the gradient of layer $l+1$, which is why deeper gradients can vanish (become very small) in networks with saturating activations like sigmoid — ReLU largely avoids this.
+
+</details>
+
+---
+
+## How It Learns
+
+An MLP is trained with mini-batch gradient descent. At each step, a small batch of training examples is passed through the network (forward pass), a loss is computed, and backpropagation computes the gradient of the loss with respect to every weight in every layer. The optimiser (Adam is the modern default) updates the weights using these gradients.
+
+One full pass through the training data is an epoch, and training typically runs for tens to hundreds of epochs until the validation loss stops improving. Early stopping — halting training when validation performance plateaus — is a simple and effective technique to prevent overfitting.
 
 ---
 
 ## When to Use It
 
-**Good for:**
-- General classification and regression when you have enough data
-- As a baseline neural network before trying more specialized architectures
-- When input is a flat feature vector (not an image or sequence)
+MLPs are a strong choice for tabular data when you have enough training examples (thousands or more) and gradient boosting leaves accuracy on the table. They are also used as components inside larger architectures — the final "classification head" of a CNN or transformer is typically a small MLP.
 
-**Not ideal for:**
-- Images (use CNN — it understands spatial patterns)
-- Sequences (use RNN/LSTM — they understand order)
+The main hyperparameters to tune are the number of layers, units per layer, learning rate, and regularisation technique (dropout and weight decay are the most common). For truly high-dimensional data like images or sequences, specialised architectures such as CNNs, RNNs, and Transformers outperform a plain MLP because they exploit structure in the data that a fully-connected network ignores.
 
 ---
 
-## Hands-On Code
-
-Install:
-
-```bash
-pip install tensorflow
-```
+## Try It Yourself
 
 ```python
-import tensorflow as tf
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-import numpy as np
+from sklearn.neural_network import MLPClassifier
 
-# Load Iris dataset
-data = load_iris()
-X = data.data.astype(np.float32)
-y = tf.keras.utils.to_categorical(data.target, num_classes=3)  # One-hot encode labels
+# Load the digits dataset (1797 samples, 64 features, 10 classes)
+X, y = load_digits(return_X_y=True)
 
-# Scale features
+# Scale features — important for gradient-based training
 scaler = StandardScaler()
-X = scaler.fit_transform(X)
-
-# Split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
-# Build the MLP
-model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(4,)),           # 4 input features
-    tf.keras.layers.Dense(16, activation='relu'), # Hidden layer: 16 units, ReLU
-    tf.keras.layers.Dense(8, activation='relu'),  # Hidden layer: 8 units, ReLU
-    tf.keras.layers.Dense(3, activation='softmax')# Output: 3 classes, probabilities
-])
+# Two hidden layers of 128 and 64 units, ReLU activation
+mlp = MLPClassifier(hidden_layer_sizes=(128, 64), activation='relu',
+                    max_iter=200, random_state=42)
+mlp.fit(X_train, y_train)
 
-# Compile: define optimizer, loss function, and metric to track
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-# Train for 50 rounds (epochs)
-model.fit(X_train, y_train, epochs=50, verbose=0)
-
-# Evaluate on test set
-loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
-print(f"Test Accuracy: {accuracy * 100:.1f}%")
+accuracy = mlp.score(X_test, y_test)
+print(f"Test accuracy: {accuracy * 100:.1f}%")
 ```
 
-**Expected output:**
+Expected output:
+
 ```
-Test Accuracy: 100.0%
+Test accuracy: 97.8%
 ```
 
 ---
 
 ## Key Takeaways
 
-- MLP is the simplest neural network: input → hidden layers → output
-- Each layer applies a learned transformation followed by an activation function
-- ReLU is the default activation for hidden layers; Softmax for multi-class output
-- Always scale your input features before training a neural network
-- Adam is a good default optimizer — it adapts the learning rate automatically
+An MLP is a neural network with one or more hidden layers of neurons, each applying a linear transformation followed by a non-linear activation. The depth is what gives it expressive power — each layer builds on the representations learned by the previous one. ReLU activations and backpropagation with mini-batch gradient descent are what make training practical at scale. MLPs work best on tabular data and serve as the fully-connected "head" inside larger architectures. They are the simplest form of deep network and a natural stepping stone to CNNs, RNNs, and Transformers.
 
 ---
 
-[← What are Neural Networks?](neural-networks-intro){: .btn } [Next → CNN](cnn){: .btn .btn-primary }
+[← Neural Networks](neural-networks-intro){: .btn } [Next → Deep Learning](deep-learning){: .btn .btn-primary }

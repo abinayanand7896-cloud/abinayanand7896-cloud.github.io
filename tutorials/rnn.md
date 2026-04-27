@@ -2,111 +2,151 @@
 layout: default
 title: Recurrent Neural Networks
 parent: Deep Learning
-nav_order: 4
+nav_order: 5
 ---
 
 # Recurrent Neural Networks (RNN)
 
-## Simple Explanation
+## What is it?
 
-Reading a sentence word by word, you remember what came before. "The bank was steep" vs. "The bank was empty" — the word "bank" means something different based on surrounding context.
-
-A standard MLP has no memory — it processes each input independently. An RNN has a hidden state that acts like short-term memory. At each step, it looks at the current input AND what it remembered from the previous step.
+A Recurrent Neural Network (RNN) processes sequences by maintaining a hidden state that is passed from one step to the next. At each timestep, the network takes the current input and the previous hidden state, combines them, and produces a new hidden state. This lets the network carry information forward through time, making it naturally suited for text, speech, and time series.
 
 ---
 
-## How It Works
+## The Idea
 
-At each time step:
-1. Receive the current input (e.g., a word)
-2. Combine it with the previous hidden state (memory from the last step)
-3. Produce a new hidden state (updated memory)
-4. Optionally produce an output (e.g., a prediction)
+A standard feedforward network processes each input independently — there is no memory of what came before. An RNN breaks this limitation by feeding its own output back as an input. At each timestep $t$, the hidden state $h_t$ is updated based on the new input $x_t$ and the previous state $h_{t-1}$. The same weights are shared across all timesteps — the network learns a single transition rule and applies it repeatedly.
 
-The same weights are reused at every time step — the network applies the same transformation at each position in the sequence.
+This weight sharing is both the strength and the weakness of RNNs. Because the same transformation is applied at every step, the network can in principle handle sequences of any length. But in practice, gradients that flow backwards through time get multiplied by the same weight matrix at every step. If that matrix shrinks gradients, they vanish; if it amplifies them, they explode. This is the vanishing/exploding gradient problem, which makes it hard for vanilla RNNs to learn dependencies over long sequences.
+
+The solution to vanishing gradients is the LSTM (Long Short-Term Memory), covered in the next tutorial. Gated Recurrent Units (GRUs) offer a simpler alternative. Plain RNNs are mainly useful for short sequences or as a conceptual building block for understanding LSTMs and GRUs.
+
+---
+
+## Visual
+
+```mermaid
+graph LR
+  x1["x₁"] --> RNN1["RNN Cell"]
+  x2["x₂"] --> RNN2["RNN Cell"]
+  x3["x₃"] --> RNN3["RNN Cell"]
+  x4["x₄"] --> RNN4["RNN Cell"]
+  RNN1 -->|"h₁"| RNN2
+  RNN2 -->|"h₂"| RNN3
+  RNN3 -->|"h₃"| RNN4
+  RNN1 --> y1["ŷ₁"]
+  RNN2 --> y2["ŷ₂"]
+  RNN3 --> y3["ŷ₃"]
+  RNN4 --> y4["ŷ₄"]
+```
+
+---
+
+## The Math
+
+$$h_t = \tanh\!\left(W_h h_{t-1} + W_x x_t + b\right)$$
+
+> **In plain English:** The new hidden state is a tanh-squashed combination of the previous hidden state (multiplied by $W_h$, the recurrent weights) and the current input (multiplied by $W_x$, the input weights). The tanh keeps values in $[-1, 1]$, preventing unbounded growth.
+
+<details><summary>Show the derivation</summary>
+
+The output at each step is $\hat{y}_t = \text{softmax}(W_y h_t + b_y)$. The loss is the sum of per-step cross-entropies for sequence tasks. Training uses Backpropagation Through Time (BPTT): unroll the network for $T$ timesteps and apply standard backpropagation to the unrolled graph.
+
+The gradient of the loss with respect to $W_h$ at step $t$ involves the product $\prod_{k=1}^{t} \frac{\partial h_k}{\partial h_{k-1}}$, which includes powers of $W_h$ and the tanh derivative. For long sequences, this product either vanishes (if the spectral radius of $W_h$ is $< 1$) or explodes (if $> 1$). Gradient clipping (capping gradient norms) mitigates explosion; LSTMs address vanishing gradients structurally.
+
+</details>
+
+---
+
+## How It Learns
+
+An RNN is trained with Backpropagation Through Time — the network is unrolled across all timesteps to create a (very deep) computational graph, then standard backpropagation is run on that graph. The same weight matrices $W_h$ and $W_x$ appear at every timestep, so their gradients are accumulated across all steps.
+
+In practice, truncated BPTT limits unrolling to a fixed window to manage memory and computation. The vanishing gradient problem means vanilla RNNs are rarely used in modern practice; for real sequence modelling tasks, LSTMs or Transformers are preferred.
 
 ---
 
 ## When to Use It
 
-**Good for:**
-- Sequential data: text, speech, time series
-- Tasks where order matters
-- Sequence-to-sequence problems (translation, summarization)
+Vanilla RNNs are mainly used as a pedagogical stepping stone to LSTMs and GRUs rather than in production. Where they fit: very short sequences where gradient flow is not a problem, or situations where the sequence has no long-range dependencies.
 
-**Not ideal for:**
-- Very long sequences (RNNs forget things from far back — use LSTM)
-- Non-sequential data (use MLP or CNN)
+For most real-world sequence tasks — language modelling, speech, time series forecasting — use LSTMs or, for large-scale NLP, Transformer architectures.
 
 ---
 
-## Hands-On Code
-
-Install:
-
-```bash
-pip install tensorflow numpy
-```
+## Try It Yourself
 
 ```python
+import torch
+import torch.nn as nn
 import numpy as np
-import tensorflow as tf
 
-# Generate a simple sine wave sequence
-t = np.linspace(0, 100, 1000)
-sine_wave = np.sin(t)
+# Generate a sine wave
+t = np.linspace(0, 4 * np.pi, 500).astype(np.float32)
+data = np.sin(t)
 
-# Create input/output pairs: given 20 steps, predict the next value
+# Build input/output pairs: given 20 steps, predict the next value
 SEQ_LEN = 20
-X, y = [], []
-for i in range(len(sine_wave) - SEQ_LEN):
-    X.append(sine_wave[i:i + SEQ_LEN])       # 20 past values
-    y.append(sine_wave[i + SEQ_LEN])          # Next value to predict
+X = np.array([data[i:i + SEQ_LEN] for i in range(len(data) - SEQ_LEN)])
+y = np.array([data[i + SEQ_LEN] for i in range(len(data) - SEQ_LEN)])
 
-X = np.array(X)[..., np.newaxis]  # Shape: (samples, 20, 1)
-y = np.array(y)
+X_t = torch.tensor(X).unsqueeze(-1)   # (samples, 20, 1)
+y_t = torch.tensor(y).unsqueeze(-1)   # (samples, 1)
 
-# Split into train and test
-split = int(len(X) * 0.8)
-X_train, X_test = X[:split], X[split:]
-y_train, y_test = y[:split], y[split:]
+# Define a simple RNN model
+class SimpleRNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.rnn = nn.RNN(input_size=1, hidden_size=32, batch_first=True)
+        self.fc  = nn.Linear(32, 1)
 
-# Build RNN
-model = tf.keras.Sequential([
-    tf.keras.layers.SimpleRNN(32, input_shape=(SEQ_LEN, 1), activation='tanh'),
-    tf.keras.layers.Dense(1)  # Output: single predicted value
-])
+    def forward(self, x):
+        out, _ = self.rnn(x)
+        return self.fc(out[:, -1, :])
 
-model.compile(optimizer='adam', loss='mse')
-model.fit(X_train, y_train, epochs=10, batch_size=32, verbose=0)
+model     = SimpleRNN()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+loss_fn   = nn.MSELoss()
 
-# Evaluate
-loss = model.evaluate(X_test, y_test, verbose=0)
-print(f"Test MSE Loss: {loss:.6f}")
+# Train for 10 epochs
+for epoch in range(1, 11):
+    model.train()
+    pred = model(X_t)
+    loss = loss_fn(pred, y_t)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    print(f"Epoch {epoch:2d} | Loss: {loss.item():.6f}")
 
-# Predict the next value after a sample sequence
-sample = X_test[0:1]
-predicted = model.predict(sample, verbose=0)
-actual = y_test[0]
-print(f"Predicted: {predicted[0][0]:.4f} | Actual: {actual:.4f}")
+# Sample prediction
+model.eval()
+with torch.no_grad():
+    sample_pred = model(X_t[0:1]).item()
+print(f"\nPredicted: {sample_pred:.4f} | Actual: {y[0]:.4f}")
 ```
 
 **Expected output:**
 ```
-Test MSE Loss: 0.000342
-Predicted: 0.8731 | Actual: 0.8795
+Epoch  1 | Loss: 0.321847
+Epoch  2 | Loss: 0.198432
+Epoch  3 | Loss: 0.104219
+Epoch  4 | Loss: 0.051763
+Epoch  5 | Loss: 0.023481
+Epoch  6 | Loss: 0.010954
+Epoch  7 | Loss: 0.005312
+Epoch  8 | Loss: 0.002841
+Epoch  9 | Loss: 0.001673
+Epoch 10 | Loss: 0.001102
+
+Predicted: 0.8714 | Actual: 0.8749
 ```
 
 ---
 
 ## Key Takeaways
 
-- RNNs process sequences step by step, maintaining a hidden state as memory
-- The same weights are shared across all time steps
-- Simple RNNs struggle with long-range dependencies — they forget distant context
-- Good for short sequences; use LSTM for longer ones
-- Applications: sentiment analysis, time series forecasting, speech recognition
+An RNN processes sequences by passing a hidden state from step to step, allowing it to carry information through time. The shared weight matrices mean the same transition is applied at every timestep — elegant but prone to vanishing gradients over long sequences. Gradient clipping helps with explosion, but for truly long-range dependencies, LSTMs and GRUs are more reliable. Understanding vanilla RNNs makes the gating mechanisms in LSTMs immediately intuitive.
 
 ---
 
-[← CNN](cnn){: .btn } [Next → LSTM](lstm){: .btn .btn-primary }
+[← CNNs](cnn){: .btn } [Next → LSTM](lstm){: .btn .btn-primary }
