@@ -7,6 +7,8 @@ has_children: true
 
 # ML Basics
 
-This track covers the fundamental machine learning algorithms — the ones every practitioner should know. You'll learn how each model works, see the key formula, and write working code.
+The core algorithms of machine learning, explained from the ground up. You will learn how each model works, understand the math behind it, and write code that actually runs.
 
-Start with [What is Machine Learning?](what-is-ml) if this is your first time here.
+Brand new to this? Set up your coding environment first: [Get Started guide](setup). It takes 5 minutes.
+
+Then start with [What is Machine Learning?](what-is-ml) and work through the tutorials in order.

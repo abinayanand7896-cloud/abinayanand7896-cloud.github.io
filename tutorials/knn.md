@@ -9,13 +9,13 @@ nav_order: 10
 
 ## What is it?
 
-K-Nearest Neighbours classifies a new data point by looking at the $k$ training points closest to it and taking a majority vote of their labels. There is no training phase — the algorithm simply memorises the training set and uses distance to classify at prediction time. It is one of the simplest and most intuitive machine learning algorithms.
+K-Nearest Neighbours classifies a new data point by looking at the $k$ training points closest to it and taking a majority vote of their labels. There's no training phase. The algorithm simply memorises the training set and uses distance to classify at prediction time. It's one of the simplest and most intuitive machine learning algorithms.
 
 ## The Idea
 
 KNN is often called a "lazy learner" because it does no work upfront. At prediction time it calculates the distance from the new point to every training point, picks the $k$ closest ones, and returns the most common class among them (or the average value for regression). The key insight is that similar things tend to have similar labels, and distance is a useful proxy for similarity.
 
-The choice of $k$ is the critical hyperparameter. With $k=1$ the model is extremely flexible — it memorises every training point exactly — but it overfits badly to noise. As $k$ grows, each prediction averages over more neighbours, smoothing out noise but potentially missing real local patterns. The right value of $k$ is usually found by cross-validation, and a small odd number like 3 or 5 is a common starting point.
+The choice of $k$ is the critical hyperparameter. With $k=1$ the model is extremely flexible. It memorises every training point exactly, but it overfits badly to noise. As $k$ grows, each prediction averages over more neighbours, smoothing out noise but potentially missing real local patterns. The right value of $k$ is usually found by cross-validation, and a small odd number like 3 or 5 is a common starting point.
 
 Feature scaling matters enormously for KNN. If one feature ranges from 0 to 1000 and another from 0 to 1, the first feature will dominate every distance calculation simply because its raw values are larger. Always standardise or normalise features before using KNN so that every dimension contributes fairly to the distance.
 
@@ -81,16 +81,16 @@ Feature scaling matters enormously for KNN. If one feature ranges from 0 to 1000
 
 $$d(\mathbf{x}, \mathbf{x'}) = \sqrt{\sum_{j=1}^{p}(x_j - x'_j)^2}$$
 
-> **In plain English:** The distance between two points is the square root of the sum of squared differences in each feature — ordinary Euclidean distance. The $k$ points with the smallest distance to the query point are the neighbours that vote.
+> **In plain English:** The distance between two points is the square root of the sum of squared differences in each feature, ordinary Euclidean distance. The $k$ points with the smallest distance to the query point are the neighbours that vote.
 
 <details>
 <summary>Show the derivation</summary>
 
-Euclidean distance is the $\ell_2$ norm $\|\mathbf{x} - \mathbf{x'}\|_2$. It is the most common choice, but other metrics are widely used too. Manhattan distance uses the $\ell_1$ norm — the sum of absolute differences rather than squared differences — and is more robust to outliers in individual features. Minkowski distance generalises both as the $\ell_p$ norm for any $p \geq 1$.
+Euclidean distance is the $\ell_2$ norm $\|\mathbf{x} - \mathbf{x'}\|_2$. It is the most common choice, but other metrics are widely used too. Manhattan distance uses the $\ell_1$ norm, the sum of absolute differences rather than squared differences, and is more robust to outliers in individual features. Minkowski distance generalises both as the $\ell_p$ norm for any $p \geq 1$.
 
-For text and other sparse high-dimensional data, cosine similarity is often preferred because it measures the angle between vectors rather than their absolute separation, which makes it invariant to the magnitude of feature values.
+For text and other sparse high-dimensional data, cosine similarity is often preferred because it measures the angle between vectors rather than their absolute separation, making it invariant to the magnitude of feature values.
 
-The choice of metric can significantly affect which points are considered "nearest," and there is no universally correct answer — the best metric depends on the structure of your data. One important caveat applies to all metrics: in very high dimensions, the distances between points tend to become nearly equal. This is known as the **curse of dimensionality**, and it is one of the main reasons KNN struggles when $p$ is large. As the number of features grows, more and more data is needed to keep the neighbourhood dense enough to be meaningful.
+The choice of metric can significantly affect which points are considered "nearest," and there is no universally correct answer. One important caveat applies to all metrics: in very high dimensions, the distances between points tend to become nearly equal. This is known as the **curse of dimensionality**, and it is one of the main reasons KNN struggles when $p$ is large. As the number of features grows, more and more data is needed to keep the neighbourhood dense enough to be meaningful.
 
 </details>
 
@@ -102,18 +102,24 @@ The computational cost of this brute-force approach is $O(n \cdot p)$ per predic
 
 ## When to Use It
 
-KNN works well when the decision boundary is irregular and the dataset is small enough that prediction time is acceptable. It makes no assumptions about the underlying data distribution, which gives it a natural flexibility that parametric models lack. It also adapts seamlessly to multi-class problems — there is nothing special to change, because the majority vote mechanism handles any number of classes.
+KNN works well when the decision boundary is irregular and the dataset is small enough that prediction time is acceptable. It makes no assumptions about the underlying data distribution, which gives it a natural flexibility that parametric models lack. It also adapts seamlessly to multi-class problems. There's nothing special to change, because the majority vote mechanism handles any number of classes.
 
-The main limitations are prediction-time cost rather than training-time cost, sensitivity to feature scale and to irrelevant features that pollute the distance calculation, and degraded performance as the number of dimensions grows. KNN is often used as a baseline to test whether a more complex model is actually adding value. It is also a natural fit for problems where the training data changes frequently, since adding new training examples requires nothing more than appending them to the stored set — there is no model to retrain.
+The main limitations are prediction-time cost rather than training-time cost, sensitivity to feature scale and to irrelevant features that pollute the distance calculation, and degraded performance as the number of dimensions grows. KNN is often used as a baseline to test whether a more complex model is actually adding value.
 
 ## Try It Yourself
 
+If you have not set up Python yet, start with the [Get Started guide](setup) first.
+
+This code trains a KNN classifier on the iris dataset. Notice that we scale the features first, which is essential for KNN to work properly.
+
+Copy this into a cell and run it with Shift + Enter:
+
 ```python
-from sklearn.datasets import load_iris
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_iris                  # classic flower dataset
+from sklearn.neighbors import KNeighborsClassifier      # the model
+from sklearn.model_selection import train_test_split    # split data
+from sklearn.preprocessing import StandardScaler        # scale features
+from sklearn.metrics import accuracy_score              # measure accuracy
 
 # Load the Iris dataset
 data = load_iris()
@@ -124,16 +130,16 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Always scale features before KNN
+# Always scale features before KNN: unscaled features distort distances
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+X_train = scaler.fit_transform(X_train)   # learn scale from train data
+X_test = scaler.transform(X_test)         # apply same scale to test data
 
-# Train with k=5
+# Train with k=5: each prediction is a vote among 5 nearest neighbours
 model = KNeighborsClassifier(n_neighbors=5)
-model.fit(X_train, y_train)
+model.fit(X_train, y_train)               # "training" just stores the data
 
-predictions = model.predict(X_test)
+predictions = model.predict(X_test)       # at prediction time, finds 5 nearest neighbours
 print(f"Accuracy: {accuracy_score(y_test, predictions) * 100:.1f}%")
 ```
 
@@ -143,9 +149,23 @@ Expected output:
 Accuracy: 100.0%
 ```
 
+**What each line does:**
+- `StandardScaler()`: rescales features so no single one dominates distance calculations
+- `KNeighborsClassifier(n_neighbors=5)`: creates a KNN model that uses 5 neighbours for each vote
+- `model.fit(X_train, y_train)`: just stores the training data (no actual training happens)
+- `model.predict(X_test)`: for each test point, finds the 5 nearest training points and takes a majority vote
+
+**What just happened?**
+
+The model looked at the 5 nearest training flowers for each test flower and predicted the most common class among them. It got 100% right on this dataset. Try changing `n_neighbors` to 1 and then to 20 and see how accuracy changes. That's the k tradeoff in action.
+
 ## Key Takeaways
 
-KNN is one of the most intuitive algorithms in machine learning — to classify a new point, just find its neighbours and take a vote. Its simplicity is also its limitation: it stores all training data, prediction time scales with the dataset size, and it struggles in high dimensions. Always standardise features before using KNN, and use cross-validation to choose $k$. For small, well-scaled datasets with non-linear boundaries, it can be surprisingly competitive.
+- KNN classifies by finding the k nearest training points and taking a majority vote. No training required.
+- Always standardise features before using KNN, or unscaled features will dominate the distance calculations.
+- Use cross-validation to choose k. Small k overfits, large k underfits.
+- It's simple and surprisingly competitive on small, well-scaled datasets with non-linear boundaries.
+- It struggles in high dimensions because distances become nearly meaningless as features pile up.
 
 ---
 
