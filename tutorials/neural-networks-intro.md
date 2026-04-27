@@ -7,19 +7,46 @@ nav_order: 1
 
 # Neural Networks
 
-## What is it?
+When you look at a photo of a dog, you recognise it instantly. You were not born knowing what a dog looks like. You learned it from thousands of examples over many years. Neural networks learn in a surprisingly similar way.
 
-A neural network is a stack of layers, where each layer transforms its input by multiplying it by a set of weights, adding a bias, and passing the result through a non-linear activation function. The network learns by adjusting all its weights through backpropagation, propagating the error signal backwards from the output to every weight in the network. It's the foundation of almost all modern deep learning.
+---
 
-## The Idea
+## What is a Neural Network?
 
-The inspiration is loosely biological. Neurons in the brain fire when their inputs exceed a threshold, passing signals forward. In a neural network, each "neuron" computes a weighted sum of its inputs and passes the result through an activation function. A layer of neurons transforms an input vector into an output vector. Stack enough layers and the network can learn extraordinarily complex functions.
+A neural network is a system made of layers. Each layer takes in a list of numbers, does some maths on them, and passes a new list of numbers to the next layer. By the time the numbers reach the final layer, the network can give you an answer: "this photo is a dog" or "this email is spam."
 
-What makes neural networks powerful is the non-linearity. Without activation functions, stacking layers would just be stacking matrix multiplications, which collapses back to a single linear transformation. Non-linear activations like ReLU ($\max(0, x)$) or sigmoid allow the network to bend and warp the feature space into shapes a linear model could never achieve.
+**New word: layer** is just a row of connected units (called neurons) that all process the same input at the same time and each produce one output number.
 
-Training is what makes the whole thing work. The network makes a prediction, compares it to the true label via a loss function, and then propagates the error backwards through the network layer by layer using the chain rule. Each weight is nudged in the direction that reduces the loss, which is gradient descent in a space with potentially millions of dimensions.
+**New word: weight** is a number the network learns. It controls how much attention each connection pays to its input. The whole process of training is about finding the right weights.
 
-## Visual
+---
+
+## A simple way to think about it
+
+Think of a factory with several conveyor belts running one after another.
+
+Raw material goes in at one end (your data). At each belt, workers (neurons) examine the material and pass it forward in a modified form. Each worker has a dial they can turn up or down (the weight) to control how much they affect the output. By the end of the factory, you get a finished product (a prediction).
+
+Training the network is like a quality inspector walking backwards through the factory after every batch, nudging each worker's dial a tiny bit in whichever direction reduces errors. After thousands of batches, the dials settle into positions that produce good output consistently.
+
+The key ingredient that makes this more than just a calculator is the **activation function**. Without it, all those layers of maths would collapse into a single equation, no more powerful than drawing a straight line. The activation function adds a bend at each layer, allowing the network to learn curved, complex patterns.
+
+---
+
+## How it works, step by step
+
+1. Your input data enters the first layer as a list of numbers (for example, pixel values of an image).
+2. Each neuron in that layer multiplies its inputs by its weights and adds them all up.
+3. The result passes through an activation function, which adds a non-linear bend.
+4. The output of that layer becomes the input of the next layer.
+5. This continues through all layers until the final layer produces a prediction.
+6. The prediction is compared to the correct answer and an error score is calculated.
+7. That error travels backwards through all layers and each weight is nudged slightly to reduce the error.
+8. Repeat for thousands of examples until the weights settle and predictions become accurate.
+
+---
+
+## See it visually
 
 ```mermaid
 graph LR
@@ -41,102 +68,108 @@ graph LR
   H1 & H2 & H3 & H4 --> O1
 ```
 
-## The Math
+Every circle is a neuron. Every arrow is a connection with a weight. Data flows left to right. The hidden layer is where the network builds up an internal understanding of the input, and the output layer turns that understanding into a final answer.
+
+---
+
+## The maths (do not panic)
+
+Here is what one layer does to its input:
 
 $$\mathbf{h} = f(\mathbf{W}\mathbf{x} + \mathbf{b})$$
 
 where $\mathbf{W}$ is the weight matrix, $\mathbf{x}$ is the input vector, $\mathbf{b}$ is the bias vector, and $f$ is the activation function applied element-wise.
 
-> **In plain English:** Each neuron computes a weighted combination of its inputs, adds a bias, and applies an activation function. A layer is just this operation applied in parallel for all its neurons.
+> **In plain English:** Each neuron multiplies every input by a corresponding weight, adds them all up, then adds one more number called a bias (which shifts the result up or down). Finally it passes the total through the activation function, which adds the non-linear bend. The whole layer does this for all its neurons at once.
 
-<details><summary>Show the derivation</summary>
+<details>
+<summary>Show more detail</summary>
 
-For a network with $L$ layers, the forward pass is:
+For a network with $L$ layers, the data passes through each one in sequence:
 
-$$\mathbf{a}^{(0)} = \mathbf{x} \quad \text{(input)}$$
+$$\mathbf{a}^{(0)} = \mathbf{x} \quad \text{(the original input)}$$
 
 Then for each layer $l = 1, \ldots, L$:
 
-$$\mathbf{z}^{(l)} = \mathbf{W}^{(l)}\mathbf{a}^{(l-1)} + \mathbf{b}^{(l)} \quad \text{(linear combination)}$$
+$$\mathbf{z}^{(l)} = \mathbf{W}^{(l)}\mathbf{a}^{(l-1)} + \mathbf{b}^{(l)} \quad \text{(weighted sum)}$$
 
 $$\mathbf{a}^{(l)} = f\!\left(\mathbf{z}^{(l)}\right) \quad \text{(activation)}$$
 
-The final output is $\hat{y} = \mathbf{a}^{(L)}$. Training minimises a loss $\mathcal{L}(\hat{y}, y)$ by computing gradients $\partial\mathcal{L}/\partial\mathbf{W}^{(l)}$ via the chain rule (backpropagation) and updating weights with gradient descent:
+The final output is $\hat{y} = \mathbf{a}^{(L)}$. Training minimises the loss $\mathcal{L}(\hat{y}, y)$ by computing gradients via the chain rule (backpropagation) and updating weights with gradient descent:
 
 $$\mathbf{W}^{(l)} \leftarrow \mathbf{W}^{(l)} - \eta \frac{\partial\mathcal{L}}{\partial\mathbf{W}^{(l)}}$$
 
+The symbol $\eta$ is the learning rate: how big a step to take each time a weight is adjusted.
+
 </details>
 
-## How It Learns
+---
 
-During training, data flows forward through the layers, producing a prediction. The loss function measures how wrong that prediction is relative to the true label, turning the error into a single scalar number.
+## Run the code yourself
 
-Backpropagation then computes the gradient of the loss with respect to every weight in the network using the chain rule, working layer by layer from the output back to the input. A gradient descent step nudges every weight in the direction that reduces the loss. Repeat this process over many batches and epochs, and the loss gradually converges as the network settles into a set of weights that fit the training data.
+This code trains a small neural network to recognise handwritten digits. The network looks at tiny 8x8 pixel images and learns to tell the difference between 0, 1, 2, all the way to 9.
 
-## When to Use It
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook.
 
-Neural networks excel at problems where classical machine learning tops out: images, audio, natural language, time series, and any domain where raw data contains rich structure that feature engineering struggles to capture. The trade-off is that they need more data, are harder to interpret, and require more computational resources to train.
-
-For structured tabular data, gradient boosting usually outperforms a neural network and is far easier to tune. A good rule of thumb is to reach for a neural network when the input is high-dimensional and unstructured, like pixels, waveforms, or tokens, and to try simpler models first when working with clean, tabular features.
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](../setup) first.
-
-This code trains a small neural network to recognise handwritten digits. It uses scikit-learn's built-in MLP (Multi-Layer Perceptron) so you don't need PyTorch or TensorFlow yet.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
-from sklearn.datasets import load_digits              # 8x8 images of handwritten digits
+# Import the tools we need
+from sklearn.datasets import load_digits              # 1797 tiny images of handwritten digits
 from sklearn.neural_network import MLPClassifier      # a simple neural network
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler      # scale inputs before training
+from sklearn.preprocessing import StandardScaler      # rescale pixel values before training
 
-# Load the digits dataset (8x8 images of handwritten digits, 0–9)
+# Load the digits dataset (each image is 8x8 pixels = 64 numbers per image)
 digits = load_digits()
-X, y = digits.data, digits.target   # X is pixel values, y is the digit label
+X, y = digits.data, digits.target   # X is pixel values, y is the digit label (0-9)
 
-# Split and scale
+# Split into training data and test data
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
+
+# Rescale pixel values: neural networks train more reliably with small, consistent numbers
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)   # normalise pixel values
+X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# Train a small neural network: two hidden layers (64 and 32 neurons)
+# Create a neural network with two hidden layers (64 and 32 neurons)
 mlp = MLPClassifier(hidden_layer_sizes=(64, 32), max_iter=500, random_state=42)
-mlp.fit(X_train, y_train)   # adjust weights via backpropagation
+mlp.fit(X_train, y_train)   # train: adjust weights via thousands of error corrections
 
-accuracy = mlp.score(X_test, y_test)     # fraction of test images classified correctly
+# Check accuracy on images the network has never seen
+accuracy = mlp.score(X_test, y_test)
 print(f"Test accuracy: {accuracy:.4f}")
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
 
+You should see:
 ```
 Test accuracy: 0.9806
 ```
 
 **What each line does:**
-- `load_digits()`: loads 1797 images of handwritten digits (each image is 8x8 pixels = 64 features)
-- `StandardScaler()`: rescales pixel values so the network trains more stably
-- `MLPClassifier(hidden_layer_sizes=(64, 32))`: creates a network with two hidden layers
-- `mlp.fit(X_train, y_train)`: runs forward passes and backpropagation to adjust weights
-- `mlp.score(X_test, y_test)`: computes accuracy on the held-out test set
+- `load_digits()`: loads 1797 handwritten digit images, each one 8x8 pixels (64 numbers per image)
+- `StandardScaler()`: rescales pixel values so the network does not get confused by uneven brightness
+- `MLPClassifier(hidden_layer_sizes=(64, 32))`: creates a network with two hidden layers, 64 neurons then 32
+- `mlp.fit(X_train, y_train)`: runs the training loop, adjusting weights until predictions improve
+- `mlp.score(X_test, y_test)`: tests the trained network on images it has never seen before
 
 **What just happened?**
 
-The network learned to recognise handwritten digits with 98% accuracy. It never saw rules like "a 0 is a closed loop." It just saw thousands of examples and learned the patterns on its own. That's neural network learning in a nutshell.
+The network learned to recognise handwritten digits with 98% accuracy. Nobody wrote rules like "a 0 is a closed loop" or "a 1 is a vertical line." The network saw thousands of labelled examples and figured out the patterns on its own. That is the power of neural networks: they learn the rules from the data.
 
-## Key Takeaways
+---
 
-- A neural network is a composition of linear transformations and non-linear activations, stacked layer by layer.
-- Non-linearity is what makes the whole thing work. Without it, the stack collapses to a single linear model.
-- Backpropagation and gradient descent are what allow the network to learn, adjusting millions of weights simultaneously.
-- Neural networks are the foundation of deep learning. Everything in this track builds directly on these ideas.
-- For tabular data, start with gradient boosting. Switch to neural networks when inputs are images, audio, or text.
+## Quick recap
+
+- A neural network is a series of layers, where each layer transforms numbers into new numbers using weights and an activation function.
+- The activation function is what makes the network powerful. Without it, the layers would collapse into a single straight-line calculation.
+- Training means repeatedly showing the network examples, measuring its errors, and nudging every weight slightly to reduce those errors.
+- Neural networks are the foundation of everything in the Deep Learning track. Every tutorial that follows builds directly on this idea.
+- For spreadsheet-style data with named columns, tree-based methods are often better. Neural networks shine when the input is images, audio, or text.
 
 ---
 

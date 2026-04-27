@@ -7,21 +7,41 @@ nav_order: 11
 
 # Naive Bayes
 
-## What is it?
+Every time Gmail moves a suspicious email into your spam folder, it probably used an algorithm called Naive Bayes. It is one of the oldest tricks in machine learning, it trains in milliseconds, and it is surprisingly difficult to beat on email and text problems. Here is how it works.
 
-Naive Bayes is a probabilistic classifier that uses Bayes' theorem to estimate the probability that a data point belongs to each class, given its features. It's called "naive" because it assumes all features are independent of each other, a simplification that rarely holds in practice but still produces surprisingly accurate classifiers. It's fast, simple, and particularly effective for text classification.
+---
 
-## The Idea
+## What is Naive Bayes?
 
-At the heart of Naive Bayes is Bayes' theorem, which gives you a principled way to update your beliefs in light of new evidence. The key intuition is that you can reason backwards. Instead of directly asking "given these words, is this email spam?", you ask "how likely are these words to appear in spam emails?" and work from there. The prior probability tells you how common spam is in the first place. The likelihood tells you how well the observed words match the spam pattern. Multiply them together and you get the posterior, the updated probability of spam given this particular email.
+Naive Bayes is a way of sorting things into categories by calculating probabilities. Given some information, it asks: "What is the probability that this belongs to category A? What is the probability it belongs to category B?" Then it picks the category with the highest probability.
 
-For classifying an email as spam, you want $P(\text{spam} \mid \text{words})$. Bayes' theorem lets you flip this: estimate $P(\text{words} \mid \text{spam})$ from training data (how often does each word appear in spam emails?), multiply by the prior $P(\text{spam})$ (what fraction of all emails are spam?), and divide by $P(\text{words})$ (a normalising constant that's the same for every class and can be ignored when comparing them).
+It is called "naive" because it makes a simplifying assumption: it treats every piece of information as completely independent of every other piece. In reality, words in an email often appear together (the word "buy" makes "cheap" more likely), but Naive Bayes ignores that connection. Despite this simplification, it often works remarkably well.
 
-The naive independence assumption is what makes this tractable. Estimating $P(\text{word}_1, \text{word}_2, \dots \mid \text{spam})$ jointly would require an astronomical amount of training data to cover every possible word combination. Instead, Naive Bayes treats each word independently and simply multiplies their individual likelihoods together. This turns an impossible joint estimation problem into a manageable one.
+**New word: probability.** A probability is a number between 0 and 1. Zero means impossible. One means certain. 0.7 means "70% likely."
 
-The naive assumption is almost never literally true. Knowing the word "buy" is in an email makes "cheap" more likely too. But even with this simplification, Naive Bayes often outperforms much more complex models on text, especially with limited training data. The independence assumption introduces some bias, but the resulting model is so data-efficient and low-variance that it frequently wins in practice.
+---
 
-## Visual
+## A simple way to think about it
+
+Imagine you are sorting your post into three piles: bills, junk mail, and personal letters. You have been doing this for years and you have built up an instinct. Bills usually contain words like "payment", "invoice", and "due date." Junk mail usually has words like "winner", "free", and "act now." Personal letters have people's names and phrases like "how are you."
+
+When a new letter arrives, you quickly scan it for these keywords. Each word gives you a clue about which pile it belongs to. Naive Bayes does exactly this. It has studied thousands of past examples and learned which words appear most often in each category. When a new example arrives, it checks each word and multiplies all the individual clues together to produce an overall probability for each category.
+
+The "naive" part is that it assumes each word is an independent clue. In reality, words interact. But even with that simplification, the algorithm performs very well because there are so many clues in a typical document that the pattern still comes through clearly.
+
+---
+
+## How it works, step by step
+
+1. Count how often each category appears in the training data. For example, 30% of emails are spam.
+2. For each category, count how often each word (or feature) appears in examples of that category
+3. Store those counts. That is the entire training process. No adjusting, no looping, just counting.
+4. When a new example arrives, calculate the probability score for each category by multiplying the category's base rate by the individual probability of each feature in that category
+5. Pick the category with the highest score
+
+---
+
+## See it visually
 
 ```mermaid
 graph TD
@@ -34,103 +54,110 @@ graph TD
   C -->|"No"| H["→ Not Spam"]
 ```
 
-## The Math
+The diagram shows the steps from a new email arriving to a final decision. The prior is the base rate (how common spam is). The likelihood is how well the email's words match the spam pattern. Multiplying them gives a combined score. Dividing by the total (normalising) turns it into a proper probability. The final step checks if that probability is above 50%.
+
+---
+
+## The maths (do not panic)
+
+Here is the formula that makes this work. We will break down every part.
 
 $$P(C \mid \mathbf{x}) = \frac{P(\mathbf{x} \mid C) \, P(C)}{P(\mathbf{x})} \propto P(C) \prod_{j=1}^{p} P(x_j \mid C)$$
 
-> **In plain English:** The probability that a point belongs to class $C$ is proportional to the prior probability of $C$ multiplied by the product of individual feature likelihoods. The class with the highest resulting score wins.
+> **In plain English:** The probability that a new example belongs to category $C$ is calculated by taking the base rate of that category ($P(C)$) and multiplying it by the individual probability of each feature given that category ($P(x_j \mid C)$). The category with the highest resulting score wins. The $\propto$ symbol means "proportional to", which means we only need to compare the scores, not calculate exact probabilities.
 
-<details><summary>Show the derivation</summary>
+<details><summary>Show more detail</summary>
 
-Applying the naive independence assumption, $P(\mathbf{x} \mid C) = \prod_j P(x_j \mid C)$. Since $P(\mathbf{x})$ is the same for all classes, it can be ignored for classification. We only need to compare scores across classes, not compute exact probabilities.
+The key simplification is the independence assumption: $P(\mathbf{x} \mid C) = \prod_j P(x_j \mid C)$. This turns a very difficult joint estimation problem into a simple multiplication of individual probabilities.
 
-For **Gaussian Naive Bayes**, each $P(x_j \mid C)$ is modelled as a Gaussian with mean $\mu_{jC}$ and variance $\sigma^2_{jC}$ estimated from training data. For **Multinomial Naive Bayes** (text), $P(x_j \mid C)$ is the relative word frequency in class $C$, with Laplace smoothing to handle unseen words.
+The denominator $P(\mathbf{x})$ is the same for every category, so it does not affect which category wins. It can be ignored when comparing categories.
 
-In practice, log-probabilities are used to avoid numerical underflow when multiplying many small probabilities:
+For **Gaussian Naive Bayes** (used for measurements and numbers), each feature's probability is modelled as a bell curve with a mean and a spread estimated from the training data.
+
+For **Multinomial Naive Bayes** (used for text), each word's probability is its relative frequency in the category's training documents. A small adjustment called Laplace smoothing (which adds a small count to every word so that unseen words do not produce a probability of exactly zero) is applied to handle words that were not in the training data.
+
+In practice, the probabilities are converted to log scale before multiplying, to avoid errors from multiplying many very small numbers together:
 
 $$\log P(C \mid \mathbf{x}) \propto \log P(C) + \sum_j \log P(x_j \mid C)$$
 
-This converts the product of tiny numbers into a sum, which is numerically stable and computationally efficient.
+This turns the multiplication of tiny numbers into a sum of negative numbers, which is much more reliable on a computer.
 
 </details>
 
-## How It Learns
+---
 
-For each class in the training set, Naive Bayes first estimates the prior probability by simply counting how often that class appears. If 30% of your training emails are spam, the prior $P(\text{spam})$ is 0.3. Then, for every feature within every class, it estimates the likelihood. For Gaussian Naive Bayes this means computing the mean and variance of each feature among examples of that class. For Multinomial Naive Bayes on text, it means counting how frequently each word appears across all documents of that class.
+## Run the code yourself
 
-Training is nothing more than computing and storing these statistics. There's no optimisation loop, no gradient descent, no iterative refinement. Once the priors and likelihoods are stored, prediction works by multiplying the prior by the product of likelihoods for every class and returning the class with the highest score. Because training is a single pass through the data and prediction is a straightforward calculation, Naive Bayes is one of the fastest classifiers in existence.
+This code trains a Naive Bayes model to sort real news articles into four categories: baseball, space science, politics, and computer graphics. After training, it will classify a brand new sentence it has never seen.
 
-## When to Use It
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook. (Or use Jupyter if you followed the [Get Started guide](setup).)
 
-Naive Bayes excels at text classification: spam detection, sentiment analysis, document categorisation. That's largely because the independence assumption is less damaging in high-dimensional bag-of-words representations. Words do co-occur, but there are so many of them that the sheer dimensionality still gives the model enough signal to classify accurately. It also trains very fast, works well with small datasets, and handles high-dimensional feature spaces gracefully.
-
-The main limitation is that the independence assumption causes it to underperform on problems where feature interactions matter strongly. If you're working with structured tabular data where knowing one feature changes the meaning of another, the naive model will miss those interactions entirely. For text especially with limited labelled data, Naive Bayes is hard to beat for the effort it requires.
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](setup) first.
-
-This code trains a Naive Bayes text classifier to sort news articles into categories. It then tests it on a new sentence.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
-from sklearn.datasets import fetch_20newsgroups        # 20 categories of news articles
-from sklearn.naive_bayes import MultinomialNB          # Naive Bayes for text counts
-from sklearn.feature_extraction.text import CountVectorizer  # convert text to word counts
+from sklearn.datasets import fetch_20newsgroups        # downloads a dataset of real news articles
+from sklearn.naive_bayes import MultinomialNB          # Naive Bayes model designed for word counts
+from sklearn.feature_extraction.text import CountVectorizer  # converts text articles into word counts
 from sklearn.metrics import accuracy_score
 
-# Load four categories of news articles
+# Choose four categories of news articles to work with
 categories = ['rec.sport.baseball', 'sci.space', 'talk.politics.guns', 'comp.graphics']
+
+# Download the training and test articles (this may take a moment the first time)
 train_data = fetch_20newsgroups(subset='train', categories=categories)
 test_data  = fetch_20newsgroups(subset='test',  categories=categories)
 
-# Convert text to word counts (each word becomes a feature)
+# Convert each article from raw text into a list of word counts
+# For example, an article about space might have: {"rocket": 3, "orbit": 2, "launch": 1, ...}
 vectorizer = CountVectorizer()
-X_train = vectorizer.fit_transform(train_data.data)   # learn vocab, then count words
-X_test  = vectorizer.transform(test_data.data)        # apply same vocab to test data
+X_train = vectorizer.fit_transform(train_data.data)   # learn the vocabulary, then count words in training articles
+X_test  = vectorizer.transform(test_data.data)        # count words in test articles using the same vocabulary
 
-# Train Naive Bayes: just counts word frequencies per category
+# Train the model: this just counts word frequencies per category, no looping required
 model = MultinomialNB()
 model.fit(X_train, train_data.target)
 
-# Predict and check accuracy
+# Test accuracy on the held-out test articles
 predictions = model.predict(X_test)
 accuracy = accuracy_score(test_data.target, predictions)
 print(f"Accuracy: {accuracy * 100:.1f}%")
 
-# Classify a brand-new sentence it's never seen before
+# Classify a brand new sentence the model has never seen
 new_text = ["The rocket launched into orbit successfully"]
-new_counts = vectorizer.transform(new_text)           # convert to word counts
+new_counts = vectorizer.transform(new_text)           # convert the new sentence to word counts
 pred = model.predict(new_counts)
 print(f"Category: {train_data.target_names[pred[0]]}")
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
+
+You should see:
 ```
 Accuracy: 93.7%
 Category: sci.space
 ```
 
 **What each line does:**
-- `fetch_20newsgroups(...)`: downloads a classic text classification benchmark with real news posts
-- `CountVectorizer()`: converts each article to a bag-of-words: a count of every word that appears
-- `vectorizer.fit_transform(train_data.data)`: learns the vocabulary from training data and counts words
-- `MultinomialNB()`: creates a Naive Bayes model designed for word count features
-- `model.fit(X_train, train_data.target)`: estimates word frequencies for each category (one pass through data)
-- `vectorizer.transform(new_text)`: converts our new sentence to the same word-count format
+- `fetch_20newsgroups(...)`: downloads a classic dataset of real news posts across 20 different topics
+- `CountVectorizer()`: creates a tool that converts raw text into a count of how many times each word appears
+- `vectorizer.fit_transform(train_data.data)`: learns the full list of known words from training articles, then counts words
+- `MultinomialNB()`: creates a Naive Bayes model designed for word count data
+- `model.fit(X_train, train_data.target)`: trains the model by counting word frequencies per category (one pass through data, no iteration)
+- `vectorizer.transform(new_text)`: converts the new sentence into word counts using the same vocabulary
 
 **What just happened?**
 
-Naive Bayes saw the word "rocket" and "orbit" and correctly guessed the article was about space science. It made that call by comparing word frequencies: words like "rocket" appear far more often in `sci.space` articles than in baseball or politics articles. Simple, fast, and 93.7% accurate.
+The model saw the words "rocket" and "orbit" in the new sentence and correctly identified it as a science/space article. It made that decision by comparing word frequencies: words like "rocket" appear far more often in space articles than in baseball, politics, or computer graphics articles. The model needed no loop, no gradient steps, and no iterations. It just counted words during training and multiplied probabilities during prediction. Simple, fast, and 93.7% accurate.
 
-## Key Takeaways
+---
 
-- Naive Bayes uses Bayes' theorem to flip the question: instead of "what class is this?", it asks "what class makes these features most likely?"
-- The naive independence assumption sounds limiting but makes the algorithm fast, data-efficient, and robust to high-dimensional spaces.
-- For text classification especially, it often punches above its weight against far more complex models.
-- Training is just counting frequencies: no gradient descent, no iterations.
-- It's a natural first choice for text problems with limited labelled data, and an excellent baseline for more complex models.
+## Quick recap
+
+- Naive Bayes predicts categories by calculating which category makes the observed features most probable
+- Training is just counting: how common is each category, and how often does each word appear in each category
+- The "naive" assumption treats every feature as independent, which is rarely true but rarely hurts performance
+- It is especially effective for text problems like spam detection, news classification, and sentiment analysis
+- It is one of the fastest classifiers available and often a strong baseline for more complex models
 
 ---
 

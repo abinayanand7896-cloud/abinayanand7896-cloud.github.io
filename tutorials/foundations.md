@@ -9,19 +9,43 @@ nav_order: 2
 
 > Before running any code here, check the [Get Started guide](setup) to make sure your environment is ready.
 
-## What is it?
+Have you ever used a music app that suggested a song you had never heard, and it turned out to be perfect? Or noticed that Google Photos can group pictures of the same person together? These two things are done by completely different types of machine learning, and this tutorial explains the difference.
 
-Machine learning splits into three broad approaches that cover almost every problem you'll encounter. Supervised learning trains a model on labelled examples, meaning pairs of inputs and correct answers, so it can predict outputs for new inputs. Unsupervised learning finds hidden structure in data that has no labels, grouping or compressing it without being told what to look for. Reinforcement learning places an agent in an environment where it learns through trial, error, and reward signals, the same way a game-playing program masters chess by playing millions of games.
+---
 
-## The Idea
+## What is ML Foundations?
 
-Think of supervised learning as a student working through a marked textbook. Every practice problem comes with the correct answer at the back. The student checks their work, notices where they go wrong, and adjusts. Over time they get better at solving problems they've never seen before. A supervised model does the same thing: it receives thousands of labelled examples and gradually learns to map inputs to outputs.
+Machine learning has three main flavours, and almost every problem you will ever encounter fits into one of them.
 
-Unsupervised learning is more like arriving in a foreign city with no map. You wander around and start noticing patterns. There's a neighbourhood that smells of bread. Another that's full of art galleries. You build a mental map from your own observations. The algorithm does exactly this: it looks at raw, unlabelled data and discovers clusters and groupings without anyone telling it what categories to find.
+The first is called **supervised learning** (which means "learning with a teacher"). You give the computer thousands of examples that already have the right answer attached. The computer studies them and learns to predict the right answer for new examples.
 
-Reinforcement learning is closest to how animals learn. Imagine training a dog. It performs an action, you give it a treat if it did the right thing, and it gradually learns which behaviours earn rewards. An RL agent does the same. It takes actions in an environment, receives numerical rewards or penalties, and slowly refines its strategy to maximise what it earns over time. That's how programs learn to play Go at superhuman levels and how robots learn to walk.
+The second is called **unsupervised learning** (which means "learning without a teacher"). You give the computer data but no answers. It looks for patterns and groupings on its own.
 
-## Visual
+The third is called **reinforcement learning** (which means "learning by trial and reward"). The computer tries things, gets a score for how well it did, and gradually figures out the best strategy. This is how computers learn to play video games.
+
+---
+
+## A simple way to think about it
+
+Think of supervised learning like a student doing practice exam papers. Every question comes with the correct answer at the back. The student checks their work, sees where they went wrong, and gets better over time. A supervised model does the same: it studies thousands of labelled examples and gradually learns to get them right.
+
+Unsupervised learning is like arriving in a new city with no map. You walk around and start noticing things. One area smells of fresh bread. Another is full of bookshops. You build a mental map just from your own observations. The algorithm does exactly this: it looks at raw data and discovers groupings without anyone telling it what the groups should be.
+
+Reinforcement learning is like training a dog. The dog tries an action. You give it a treat if it did the right thing. Over time the dog learns which actions earn treats. A reinforcement learning program does the same, except the "treats" are points or scores in a computer environment.
+
+---
+
+## How it works, step by step
+
+1. Decide which type of learning fits your problem: do you have labelled examples, unlabelled data, or a reward signal?
+2. Collect your data in the right format for your chosen approach
+3. Pick a model that suits your approach (a classifier for supervised learning, a clustering tool for unsupervised, etc.)
+4. Train the model on your data
+5. Test how well it performs on examples it has not seen before
+
+---
+
+## See it visually
 
 ```mermaid
 graph TD
@@ -36,73 +60,75 @@ graph TD
   R --> R2["Robotics\n(walking, grasping)"]
 ```
 
-## The Math
+This diagram shows the three types of machine learning and an example of what each type is used for. Most tutorials in this series focus on supervised learning, because it is the most common type in real-world applications.
 
-The maths lives inside each specific algorithm. This tutorial is about the big picture. You'll see equations starting with Linear Regression in the next tutorial.
+---
 
-## How It Learns
+## The maths (do not panic)
 
-Each approach shares a common theme: define an objective, then adjust the model's parameters to improve it. In supervised learning, the model measures the gap between its predictions and the correct labels, then nudges its parameters to close that gap a little more with every example it sees. In unsupervised learning, the objective might be making clusters as tight and well-separated as possible. In reinforcement learning, the objective is long-term cumulative reward. Three approaches, three different objectives, but the same underlying logic: measure how well you're doing and keep improving.
+The maths lives inside each specific algorithm. This tutorial is about the big picture. You will see equations starting with the Linear Regression tutorial.
 
-## When to Use It
+---
 
-Reach for supervised learning whenever you have a clear prediction task and labelled examples to learn from. Spam detection, price prediction, and image classification all fall here. If your data has no labels and you want to explore its structure or reduce its dimensionality before feeding it to another model, unsupervised learning is the right tool. Reinforcement learning is best saved for sequential decision-making problems where the right action now depends on what you want to happen many steps later, like game playing or robot control.
+## Run the code yourself
 
-## Try It Yourself
+This code shows both supervised and unsupervised learning side by side. The first half trains a model to predict a number from labelled examples. The second half groups data into clusters without using any labels at all.
 
-If you have not set up Python yet, start with the [Get Started guide](setup) first.
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook. (Or use Jupyter if you followed the [Get Started guide](setup).)
 
-This code shows both supervised and unsupervised learning side by side. The first half trains a model to predict a number. The second half groups data into clusters without any labels at all.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
-from sklearn.linear_model import LinearRegression  # supervised model
-from sklearn.cluster import KMeans                 # unsupervised model
-from sklearn.datasets import load_iris             # a classic dataset
-import numpy as np                                 # number arrays
+from sklearn.linear_model import LinearRegression  # a supervised model that fits a line
+from sklearn.cluster import KMeans                 # an unsupervised model that finds groups
+from sklearn.datasets import load_iris             # a classic flower dataset we will use
+import numpy as np                                 # a tool for working with lists of numbers
 
-# --- Supervised: predict a continuous value ---
-X_train = np.array([[1], [2], [3], [4], [5]])   # input: 5 data points
-y_train = np.array([2.1, 3.9, 6.2, 7.8, 10.1]) # output: the correct answers
+# --- Part 1: Supervised learning: predict a number from labelled examples ---
+X_train = np.array([[1], [2], [3], [4], [5]])    # input values: 5 data points
+y_train = np.array([2.1, 3.9, 6.2, 7.8, 10.1])  # correct output for each input
 
-model = LinearRegression()          # create the model
-model.fit(X_train, y_train)         # train it on the labelled data
+model = LinearRegression()           # create a blank model
+model.fit(X_train, y_train)          # train it by showing it the labelled examples
 print("Supervised prediction for x=6:", round(model.predict([[6]])[0], 2))
 
-# --- Unsupervised: cluster without labels ---
+# --- Part 2: Unsupervised learning: find groups with no labels ---
 iris = load_iris()
-X_iris = iris.data   # features only, no labels used
+X_iris = iris.data   # we only use the measurements here, not the species labels
 
 kmeans = KMeans(n_clusters=3, random_state=42, n_init="auto")  # ask for 3 groups
-kmeans.fit(X_iris)                                              # find the groups
-print("Cluster labels (first 10):", kmeans.labels_[:10])       # show which group each point got
+kmeans.fit(X_iris)                                              # find the 3 groups on its own
+print("Cluster labels (first 10):", kmeans.labels_[:10])       # show which group each flower got
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
+
+You should see:
 ```
 Supervised prediction for x=6: 11.96
 Cluster labels (first 10): [1 1 1 1 1 1 1 1 1 1]
 ```
 
 **What each line does:**
-- `LinearRegression()`: creates a model that fits a straight line through data
+- `LinearRegression()`: creates a model that will learn by fitting a straight line through the data
 - `model.fit(X_train, y_train)`: trains the model using the labelled examples
-- `model.predict([[6]])`: asks the trained model for its prediction at x=6
-- `KMeans(n_clusters=3)`: creates a clustering model that will find 3 groups
-- `kmeans.fit(X_iris)`: groups the iris data without using any labels
-- `kmeans.labels_[:10]`: shows which cluster each of the first 10 points ended up in
+- `model.predict([[6]])`: asks the trained model for its prediction at the new value 6
+- `KMeans(n_clusters=3)`: creates a clustering model that will find 3 natural groups in the data
+- `kmeans.fit(X_iris)`: groups the flower data without using any species labels at all
+- `kmeans.labels_[:10]`: shows which group each of the first 10 flowers ended up in
 
 **What just happened?**
 
-The first half trained a supervised model: it learned the relationship between x and y from five examples, then predicted a new value. The second half did something different entirely. It found three natural groupings in the iris data without ever being told the species names. That's the difference between supervised and unsupervised learning in action.
+The first half trained a supervised model. It learned the relationship between the input and output from five labelled examples, then predicted a new value it had never seen. The second half did something completely different. It found three natural groupings in the flower data without ever being told the species names. That is the difference between supervised and unsupervised learning in action.
 
-## Key Takeaways
+---
 
-- Supervised learning uses labelled data to predict outputs. It's the most common type in practice.
-- Unsupervised learning finds structure in unlabelled data, useful for clustering and compression.
-- Reinforcement learning learns through trial and reward, great for games and robotics.
-- Choosing the right approach is the first and most important step in any ML project.
-- Most tutorials in this series focus on supervised learning, with detours into K-Means and PCA.
+## Quick recap
+
+- Supervised learning uses labelled examples to predict outputs. It is the most common type in practice.
+- Unsupervised learning finds patterns in data that has no labels. It is useful for grouping and exploration.
+- Reinforcement learning learns through trial and reward. It is great for games and robotics.
+- Choosing the right type of learning is the first and most important decision in any machine learning project.
+- Most tutorials in this series focus on supervised learning, with some detours into unsupervised methods.
 
 [← What is ML?](what-is-ml){: .btn } [Next → Linear Regression](linear-regression){: .btn .btn-primary }

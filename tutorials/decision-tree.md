@@ -7,21 +7,42 @@ nav_order: 5
 
 # Decision Trees
 
-## What is it?
-
-A Decision Tree is a machine learning model that makes predictions by asking a sequence of yes/no questions about the input. At each step it splits the data based on the answer, following one branch or the other, until it reaches a final prediction. It learns which questions to ask, and in what order, directly from your training data. The result is a model you can read like a flowchart and explain to anyone, making it one of the most interpretable algorithms in all of ML.
+You know how a doctor checks you for the flu? First they ask: "Do you have a fever?" If yes: "Do you have body aches?" If yes: "Did your symptoms start suddenly?" Each question narrows things down until there is a confident answer. A Decision Tree is a computer model that does exactly this, but it learns which questions to ask from data instead of a medical textbook.
 
 ---
 
-## The Idea
+## What is a Decision Tree?
 
-Imagine you're a doctor trying to decide whether a patient has the flu. You might ask: Do they have a fever? If yes, do they have body aches? If yes, do symptoms come on suddenly? Each question narrows things down until you reach a confident answer. A Decision Tree does exactly this, but instead of a doctor's intuition, it uses mathematics to find the questions that divide your data most cleanly at each step.
+A Decision Tree is a model that makes predictions by asking a series of yes/no questions about the input. At each step, it follows one branch based on the answer, until it reaches a final prediction.
 
-The tree is built from the top down. At the root, it searches every possible feature and every possible split point to find the question that separates the classes best. It then recurses on each branch, splitting again and again, until the data at each leaf is mostly one class or it hits a depth limit you've set. When a new example arrives, it just travels down the tree answering questions until it hits a leaf. That leaf's majority class is the prediction.
+The clever part is that the model figures out which questions to ask on its own. You show it your training data (which means the examples with known answers), and it works out the questions that best separate the different categories. No human has to write the rules.
+
+**New word: node.** In a Decision Tree, a "node" is one question. The top question is called the root. The final answers at the very bottom are called leaves.
 
 ---
 
-## Visual
+## A simple way to think about it
+
+Imagine you are playing a guessing game where your friend thinks of an animal and you have to figure out which one by asking yes/no questions. A smart player does not ask random questions. They ask questions that cut the possibilities in half each time.
+
+"Does it have four legs?" "Yes." "Does it live in water?" "No." "Does it eat meat?" "Yes." You reach "lion" after just three questions.
+
+A Decision Tree works the same way. It scans all the information it has and picks the question that best divides the examples at each step. It keeps asking questions until the answer is clear. The tree it builds is like the record of all those questions and branches.
+
+---
+
+## How it works, step by step
+
+1. The algorithm looks at every piece of information (every feature) in your training data
+2. It tries every possible way to split the data and finds the split that creates the most separated groups
+3. It uses that split as the first question (the root of the tree)
+4. It then repeats steps 1 and 2 separately for each branch created by that question
+5. It keeps splitting until each group contains mostly one category, or until it hits a limit you set
+6. For a new example, it simply follows the questions from the top until it reaches a leaf and reads off the prediction
+
+---
+
+## See it visually
 
 ```mermaid
 graph TD
@@ -37,78 +58,72 @@ graph TD
     style E fill:#d1fae5,stroke:#10b981
 ```
 
+This is a real Decision Tree trained on iris flower data. It only needs two questions to classify all three flower species. A new flower enters at the top, answers each question, and follows the branches until it reaches a leaf with the species name.
+
 ---
 
-## The Math
+## The maths (do not panic)
 
-At each node, the tree picks the split that minimises **Gini Impurity**, a measure of how mixed the classes are in a group.
+Here is the formula the algorithm uses to pick the best question at each step. We will break down every part.
 
 $$G = 1 - \sum_{k=1}^{K} p_k^2$$
 
-where $p_k$ is the fraction of examples in class $k$ at that node.
-
-> **In plain English:** Gini Impurity is zero when every example in a node belongs to the same class (a perfect split), and highest when the classes are evenly mixed. The tree always picks the split that produces the lowest weighted average Gini across the two child nodes.
+> **In plain English:** This formula measures how mixed up a group is. If all examples in the group belong to the same category, the score is 0 (perfectly pure). If the categories are evenly mixed, the score is highest. The algorithm always picks the question that leads to the least-mixed groups. This score is called the Gini Impurity score.
 
 <details>
-<summary>Show the derivation</summary>
+<summary>Show more detail</summary>
 
-When evaluating a candidate split that divides $n$ examples into a left group of $n_L$ and a right group of $n_R$:
+When the algorithm considers splitting a group of examples into a left group and a right group, it calculates the combined impurity of both groups:
 
 $$G_{\text{split}} = \frac{n_L}{n} G_L + \frac{n_R}{n} G_R$$
 
-The tree computes this for every feature and every possible threshold, then picks the $(feature, threshold)$ pair that minimises $G_{\text{split}}$.
+Here, $n_L$ is the number of examples going left and $n_R$ is the number going right. The algorithm calculates this for every possible feature and every possible dividing value (for example, "petal length less than 1.5?" or "petal length less than 2.0?"), and picks the combination that gives the lowest score.
 
-An alternative to Gini is **Information Gain**, based on entropy:
+There is another method called **Information Gain**, based on a different formula called entropy:
 
 $$H = -\sum_{k=1}^{K} p_k \log_2 p_k$$
 
-Entropy reaches zero for a pure node and $\log_2 K$ for a uniformly mixed node. Information gain is the drop in entropy after a split. Both criteria produce similar trees in practice. Scikit-learn uses Gini by default.
+Entropy also measures how mixed a group is, just with a different calculation. Both methods produce very similar trees in practice. The default in most tools, including the one you will use in the code below, is Gini Impurity.
 
 </details>
 
 ---
 
-## How It Learns
+## Run the code yourself
 
-Building a Decision Tree is a greedy process. Starting at the root, the algorithm scans every feature and every possible split threshold, computes the weighted Gini impurity for each, and picks the best one. It then repeats this independently for the left and right branches. The tree keeps growing until every leaf is pure, or until a stopping condition is met, most commonly a maximum depth. A fully grown tree will memorise the training data perfectly but generalise badly to new examples. That's overfitting. Setting `max_depth` limits this by stopping splits early, which sacrifices some training accuracy in exchange for much better performance on unseen data.
+This code will train a Decision Tree on the iris flower dataset and tell you its accuracy, how deep the tree grew, and how many leaves it has.
 
----
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook. (Or use Jupyter if you followed the [Get Started guide](setup).)
 
-## When to Use It
-
-Decision Trees are a natural fit when your problem has a rule-based flavour, when you can imagine a human expert writing down a decision flowchart. They handle both numerical and categorical features without any preprocessing, and they're easy to explain to a non-technical audience. The main weakness is overfitting: a single tree trained without depth limits will often perform worse on test data than on training data. If you need more predictive power, the solution is usually to move to Random Forest or Gradient Boosting, both of which build on Decision Trees but correct for this instability by combining many trees together.
-
----
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](setup) first.
-
-This code trains a Decision Tree on the iris flower dataset and shows its accuracy, depth, and number of leaves.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
-from sklearn.datasets import load_iris                    # classic flower dataset
-from sklearn.tree import DecisionTreeClassifier           # the model
-from sklearn.model_selection import train_test_split      # split data into train/test
-from sklearn.metrics import accuracy_score                # how often we're right
+from sklearn.datasets import load_iris                    # loads the iris flower dataset
+from sklearn.tree import DecisionTreeClassifier           # the Decision Tree model
+from sklearn.model_selection import train_test_split      # splits data into training and test sets
+from sklearn.metrics import accuracy_score                # measures how often we are right
 
-data = load_iris()                                         # load the dataset
+data = load_iris()                                        # load the 150-flower dataset
+
+# Split data: 80% is used for training, 20% is kept hidden for testing
 X_train, X_test, y_train, y_test = train_test_split(
-    data.data, data.target, test_size=0.2, random_state=42  # 80% train, 20% test
+    data.data, data.target, test_size=0.2, random_state=42
 )
 
-model = DecisionTreeClassifier(max_depth=3, random_state=42)  # limit depth to prevent overfitting
-model.fit(X_train, y_train)                                   # train the tree
+# Create the tree with a maximum depth of 3 questions
+# Without a limit, the tree would memorise the training data and perform worse on new examples
+model = DecisionTreeClassifier(max_depth=3, random_state=42)
+model.fit(X_train, y_train)                               # build the tree from training data
 
-predictions = model.predict(X_test)                           # predict on test data
+predictions = model.predict(X_test)                       # run each test flower through the tree
 print(f"Accuracy: {accuracy_score(y_test, predictions) * 100:.1f}%")
-print(f"Tree depth: {model.get_depth()}")                     # how deep did the tree grow?
-print(f"Number of leaves: {model.get_n_leaves()}")            # how many final decision nodes?
+print(f"Tree depth: {model.get_depth()}")                 # how many questions deep is the tree?
+print(f"Number of leaves: {model.get_n_leaves()}")        # how many final answer points does it have?
 ```
 
-Expected output:
+**Step 3:** Press **Shift + Enter** to run it.
+
+You should see:
 ```
 Accuracy: 100.0%
 Tree depth: 3
@@ -116,25 +131,25 @@ Number of leaves: 4
 ```
 
 **What each line does:**
-- `DecisionTreeClassifier(max_depth=3)`: creates a tree that can ask at most 3 questions before deciding
+- `DecisionTreeClassifier(max_depth=3)`: creates a tree that is allowed to ask at most 3 questions before giving an answer
 - `model.fit(X_train, y_train)`: builds the tree by finding the best questions to ask
-- `model.predict(X_test)`: walks each test example down the tree to a leaf and returns that leaf's class
-- `model.get_depth()`: tells you how many levels deep the tree is
-- `model.get_n_leaves()`: tells you how many final decision points the tree has
+- `model.predict(X_test)`: sends each test flower down through the tree and returns the answer at the leaf
+- `model.get_depth()`: tells you how many levels deep the final tree is
+- `model.get_n_leaves()`: tells you how many final answer points the tree has
 
 **What just happened?**
 
-The model learned three yes/no questions that perfectly separate the three iris species. It only needed to go 3 levels deep. That's the power of Decision Trees: you can actually see what the model learned. Try removing `max_depth=3` and see how deep the tree grows on its own, and whether it still performs as well on test data.
+The model learned just three yes/no questions that perfectly separate all three iris flower species. You can actually look at the diagram above and follow the same logic your model used. Try removing `max_depth=3` and see how deep the tree grows on its own. Notice whether the accuracy on the test set goes up or down. Usually, a tree that grows without limits gets worse on test data because it memorises the training examples instead of learning the real pattern.
 
 ---
 
-## Key Takeaways
+## Quick recap
 
-- A Decision Tree learns a sequence of yes/no questions from your data and uses them to make predictions.
-- It's one of the few models you can visualise and explain completely.
-- Without a depth limit, a tree will memorise training data rather than learn the underlying pattern.
-- In practice, Decision Trees are rarely used alone. They're the foundation for Random Forest and Gradient Boosting.
-- Always set `max_depth` or another stopping criterion to prevent overfitting.
+- A Decision Tree learns a sequence of yes/no questions from your data and uses them to make predictions
+- It is one of the few models you can read like a flowchart and explain to anyone
+- Without a depth limit, a tree will memorise training data instead of learning the underlying pattern
+- In practice, Decision Trees are rarely used alone. They are the building block for Random Forests and Gradient Boosting
+- Always set `max_depth` or another limit to stop the tree from growing too large
 
 ---
 

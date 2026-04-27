@@ -7,23 +7,45 @@ nav_order: 6
 
 # LSTM
 
-## What is it?
-
-An LSTM (Long Short-Term Memory) is a recurrent neural network cell designed to solve the vanishing gradient problem that cripples standard RNNs. It maintains two internal states: a hidden state $h_t$ like a vanilla RNN, and a cell state $c_t$, a separate "memory highway" that allows gradients to flow across many timesteps without vanishing. Gates control what gets written to memory, what gets erased, and what gets read out at every step.
+Think about reading a long book. You do not remember every sentence. You remember the important ones, like when the villain was introduced or when the hero made a key decision. Everything else fades. An LSTM learns to do exactly this: remember what matters and forget what does not.
 
 ---
 
-## The Idea
+## What is an LSTM?
 
-The core problem with vanilla RNNs is that the gradient signal decays as it travels backwards through many timesteps. The network can't reliably learn that something at the beginning of a sequence matters for what happens at the end. LSTMs fix this by introducing a cell state $c_t$ that flows through time largely unchanged unless a gate deliberately modifies it. Think of it as a conveyor belt running alongside the normal hidden state, carrying information across long distances without it getting diluted.
+An LSTM (Long Short-Term Memory) is an improved version of a Recurrent Neural Network. It was designed to fix one specific problem: standard RNNs struggle to remember things from early in a long sequence by the time they reach the end.
 
-Three separate gates regulate how that memory gets used. The forget gate $f_t$ is a sigmoid layer that looks at the previous hidden state and the current input, then outputs a number between 0 and 1 for each element of the cell state. A value near 0 means "erase this" and a value near 1 means "keep this." The input gate $i_t$ works in tandem with a candidate value $\tilde{c}_t$ (produced by a tanh layer) to decide how much new information gets written into memory. Together, the forget and input gates produce the new cell state: erase a fraction of what was there before, then add some portion of the new candidate.
+LSTMs solve this by adding a separate long-term memory track, called the cell state, alongside the regular short-term hidden state. Learned gates decide what to keep, what to erase, and what to read out at every step.
 
-Once the cell state is updated, the output gate $o_t$ decides what portion of it gets exposed as the hidden state $h_t$. The hidden state is the cell state passed through a tanh and then filtered by the output gate, so the network can keep certain memories "internal" while revealing only what's relevant for the current output. Because the cell state update is additive rather than multiplicative, gradients can flow backwards through time without being repeatedly crushed by a weight matrix, which is what makes deep temporal dependencies learnable.
+**New word: gate** is a control mechanism. It outputs a number between 0 and 1 for each piece of memory. A value near 1 means "keep this." A value near 0 means "erase this." The network learns when to open and close each gate from training data.
 
 ---
 
-## Visual
+## A simple way to think about it
+
+Imagine a notebook that you carry through a long journey. At each new location you visit, you decide three things:
+
+1. **What to forget:** You flip through the notebook and cross out old notes that are no longer relevant.
+2. **What to write:** You add new notes about what you just saw.
+3. **What to tell people:** When someone asks what you have seen, you summarise only the relevant parts, not the whole notebook.
+
+An LSTM does exactly this, but with numbers. The "notebook" is the cell state. The three decisions are made by three learned gates: the forget gate, the input gate, and the output gate.
+
+The key insight is that the cell state can carry information across hundreds of steps largely unchanged, because the forget gate can choose to keep its value close to 1 (keep everything). A standard RNN has no such mechanism. Its memory fades every step whether it wants it to or not.
+
+---
+
+## How it works, step by step
+
+1. The forget gate looks at the current input and the previous hidden state. It outputs a number between 0 and 1 for each piece of memory: 0 means erase, 1 means keep.
+2. The input gate decides what new information to write into memory. It creates a candidate set of new values and decides how much of each to write.
+3. The cell state is updated: old contents are multiplied by the forget gate (some erased), then the new candidate values are added (weighted by the input gate).
+4. The output gate decides what part of the updated cell state to use as the hidden state for this step.
+5. The hidden state is passed to the next step alongside the updated cell state.
+
+---
+
+## See it visually
 
 ```mermaid
 graph LR
@@ -38,9 +60,13 @@ graph LR
   OG --> ht["hₜ"]
 ```
 
+The four boxes on the left are the gates and candidate calculation. They all look at the same inputs: the current data $x_t$ and the previous hidden state. Their outputs combine to update the cell state $c_t$, which then passes through the output gate to produce the new hidden state $h_t$.
+
 ---
 
-## The Math
+## The maths (do not panic)
+
+Here are the two key update equations:
 
 $$c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t$$
 
@@ -48,98 +74,78 @@ $$h_t = o_t \odot \tanh(c_t)$$
 
 where $f_t = \sigma(W_f [h_{t-1}, x_t] + b_f)$, $i_t = \sigma(W_i [h_{t-1}, x_t] + b_i)$, $o_t = \sigma(W_o [h_{t-1}, x_t] + b_o)$, and $\tilde{c}_t = \tanh(W_c [h_{t-1}, x_t] + b_c)$.
 
-> **In plain English:** The cell state $c_t$ is updated by forgetting part of the old state ($f_t \odot c_{t-1}$) and adding new content ($i_t \odot \tilde{c}_t$). The hidden state is what the cell state "decides to reveal" through the output gate.
+> **In plain English:** The cell state $c_t$ is updated in two steps. First, some of the old memory $c_{t-1}$ is erased by multiplying it by the forget gate $f_t$ (where $\odot$ means "multiply element by element"). Then, new content from the candidate values $\tilde{c}_t$ is added, filtered by how much the input gate $i_t$ says to write. The hidden state $h_t$ is then what the cell state decides to reveal through the output gate.
 
-<details><summary>Show the derivation</summary>
+<details>
+<summary>Show more detail</summary>
 
-The key to understanding why LSTMs resist vanishing gradients is the gradient of the loss with respect to $c_{t-1}$:
+The key reason LSTMs resist the vanishing gradient problem is in the first equation. The gradient of the cell state with respect to the previous cell state is simply $f_t$. This is a learned number, not a repeated multiplication by the same large weight matrix. When the forget gate stays near 1 over many steps, the gradient flows backwards almost unchanged, allowing the network to adjust weights for events that happened hundreds of steps ago.
 
-$$\frac{\partial c_t}{\partial c_{t-1}} = f_t$$
-
-Because $f_t \in (0, 1)$ is produced by a separate gate with its own learned parameters, rather than a shared weight matrix applied repeatedly, it can stay close to 1 over many timesteps, letting gradients flow far back without vanishing. This insight is known as the Constant Error Carousel from the original 1997 Hochreiter & Schmidhuber paper.
-
-GRUs (Gated Recurrent Units) simplify the LSTM by merging the cell and hidden states and using only two gates (reset and update), achieving similar performance with fewer parameters. For many tasks the two architectures are interchangeable.
+GRUs (Gated Recurrent Units) simplify the LSTM by combining the cell state and hidden state into one and using only two gates (reset and update). They often perform similarly to LSTMs with fewer parameters, and are worth trying if you want a lighter model.
 
 </details>
 
 ---
 
-## How It Learns
+## Run the code yourself
 
-LSTMs are trained with the same Backpropagation Through Time algorithm used for vanilla RNNs, but the cell state's additive update keeps gradients from vanishing over long sequences. In practice, the network learns which events to remember and which to forget entirely from the training data. You don't need to hand-design what the gates should attend to.
+This code trains an LSTM to predict the next value of a sine wave, the same task as the RNN tutorial. Compare the final test loss to see how much better the LSTM does.
 
-In modern frameworks, LSTMs are available as `nn.LSTM` in PyTorch and `tf.keras.layers.LSTM` in TensorFlow. They're typically stacked two to four layers deep, with dropout applied between layers to regularise the model. Training is straightforward: the gating mechanism handles the gradient problem automatically, so you can use standard optimisers like Adam without special tuning.
+**Step 1:** Open [Google Colab](https://colab.research.google.com) and create a new notebook.
 
-For tasks with very long sequences, thousands of timesteps, Transformers with attention mechanisms have largely superseded LSTMs because attention can directly connect distant positions without routing the signal through every intermediate step. That said, LSTMs remain fast, lightweight, and effective for sequences of moderate length where the full attention computation would be overkill.
-
----
-
-## When to Use It
-
-LSTMs remain competitive for a wide range of sequence modelling tasks: time series forecasting, named entity recognition, speech recognition, and machine translation (though Transformers have largely taken over in large-scale translation). Their main practical advantage over Transformers is that they're lighter on memory and compute, and they require less data to train well, making them the right starting point when resources are limited.
-
-If you have a sequence modelling problem and access to only a modest amount of data or a single GPU, an LSTM is often the most pragmatic choice. When your sequences grow very long, when global context across the whole sequence is essential, or when you're working on tasks like document understanding or large-scale language modelling, Transformer architectures offer a more powerful solution. The rule of thumb is straightforward: try the LSTM first and upgrade to a Transformer if you need to.
-
----
-
-## Try It Yourself
-
-If you have not set up Python yet, start with the [Get Started guide](../setup) first.
-
-This code trains an LSTM to predict future values in a sine wave. Compare the final test loss to the RNN tutorial to see how much better the LSTM handles the same problem.
-
-Copy this into a cell and run it with Shift + Enter:
+**Step 2:** Copy this code into a cell:
 
 ```python
 import torch                                       # PyTorch
-import torch.nn as nn                             # neural network modules
-import numpy as np                                # numerical arrays
+import torch.nn as nn                             # neural network tools
+import numpy as np                                # numerical array tools
 
-# Generate a sine wave: 1000 data points
+# Create a sine wave: 1000 data points
 t = np.linspace(0, 100, 1000)
 sine_wave = np.sin(t).astype(np.float32)
 
-# Build input/output pairs: given 20 steps, predict the next value
+# Build training pairs: given 20 past values, predict the next value
 SEQ_LEN = 20
 X, y = [], []
 for i in range(len(sine_wave) - SEQ_LEN):
     X.append(sine_wave[i:i + SEQ_LEN])       # input: 20 consecutive values
-    y.append(sine_wave[i + SEQ_LEN])          # output: the next value
+    y.append(sine_wave[i + SEQ_LEN])          # target: the next value
 
-X = torch.tensor(X).unsqueeze(-1)             # shape: (N, SEQ_LEN, 1)
+# Convert to PyTorch tensors
+X = torch.tensor(X).unsqueeze(-1)             # shape: (N, 20, 1)
 y = torch.tensor(y).unsqueeze(-1)             # shape: (N, 1)
 
-# Split into train (80%) and test (20%)
+# Split: 80% for training, 20% for testing
 split = int(len(X) * 0.8)
 X_train, X_test = X[:split], X[split:]
 y_train, y_test = y[:split], y[split:]
 
-# Define LSTM model: replaces the RNN cell with an LSTM cell
+# Define the LSTM model (very similar to the RNN, but uses an LSTM cell)
 class LSTMPredictor(nn.Module):
     def __init__(self):
         super().__init__()
-        # LSTM: has both hidden state AND cell state for better long-term memory
+        # LSTM cell: maintains both a hidden state (short-term) and cell state (long-term)
         self.lstm = nn.LSTM(input_size=1, hidden_size=32, batch_first=True)
-        self.fc = nn.Linear(32, 1)              # output: one predicted value
+        self.fc = nn.Linear(32, 1)              # predict one number from the final hidden state
 
     def forward(self, x):
-        out, _ = self.lstm(x)                  # process all timesteps with gating
+        out, _ = self.lstm(x)                  # process all 20 steps using gates
         return self.fc(out[:, -1, :])          # use final hidden state to predict
 
 model = LSTMPredictor()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 loss_fn = nn.MSELoss()
 
-# Train for 20 epochs
+# Train for 20 passes through the training data
 for epoch in range(20):
     model.train()
-    pred = model(X_train)                      # forward pass through LSTM
-    loss = loss_fn(pred, y_train)             # compare to true next values
+    pred = model(X_train)                      # forward pass
+    loss = loss_fn(pred, y_train)             # measure prediction error
     optimizer.zero_grad()
-    loss.backward()                            # backpropagate through all timesteps
-    optimizer.step()
+    loss.backward()                            # backpropagate through all 20 time steps
+    optimizer.step()                           # update weights
 
-# Evaluate on held-out test data
+# Evaluate on the test data the model has never seen
 model.eval()
 with torch.no_grad():
     test_pred = model(X_test)
@@ -148,31 +154,33 @@ with torch.no_grad():
     print(f"Predicted: {test_pred[0].item():.4f} | Actual: {y_test[0].item():.4f}")
 ```
 
-**Expected output:**
+**Step 3:** Press **Shift + Enter** to run it.
+
+You should see:
 ```
 Test MSE Loss: 0.000073
 Predicted: 0.8803 | Actual: 0.8795
 ```
 
 **What each line does:**
-- `nn.LSTM(input_size=1, hidden_size=32)`: creates an LSTM with forget, input, and output gates
-- `out, _ = self.lstm(x)`: processes all 20 timesteps, using gates to selectively remember and forget
-- `out[:, -1, :]`: takes the final hidden state, which summarises the whole sequence
-- `loss.backward()`: backpropagates through all timesteps, with cell state keeping gradients alive
+- `nn.LSTM(input_size=1, hidden_size=32)`: creates an LSTM cell with forget, input, and output gates plus 32 memory units
+- `out, _ = self.lstm(x)`: processes all 20 time steps, updating both the hidden state and cell state at each step
+- `out[:, -1, :]`: takes only the hidden state from the final step to use for prediction
+- `loss.backward()`: sends the error signal backwards through all 20 steps, with the cell state keeping it from fading
 
 **What just happened?**
 
-The LSTM achieved a test loss of 0.000073, dramatically better than a vanilla RNN on the same task. The difference is the cell state: it's an additive memory highway that lets gradients flow backwards without shrinking at every step. That's the practical payoff of the gating mechanism.
+The LSTM achieved a test loss of 0.000073. Compare that to the standard RNN in the previous tutorial. The LSTM is dramatically more accurate on the same task. The difference comes from the cell state: it is a memory highway that carries information across all 20 steps without it getting diluted. The gates learned when to remember and when to forget, entirely from examples.
 
 ---
 
-## Key Takeaways
+## Quick recap
 
-- LSTMs solve the vanishing gradient problem by introducing a cell state that flows through time nearly unchanged unless a gate intervenes.
-- The forget, input, and output gates give the network fine-grained control over what to remember, write, and expose at each step.
-- This gating mechanism allows LSTMs to learn dependencies spanning hundreds of timesteps, which vanilla RNNs simply can't do reliably.
-- They remain a strong and practical choice for sequence modelling when Transformer-scale resources aren't available.
-- A natural next step whenever a vanilla RNN falls short, and a good default before scaling up to full Transformer architectures.
+- An LSTM adds a long-term memory track (the cell state) to the standard RNN's short-term memory (the hidden state).
+- Three gates control what gets erased, what gets written, and what gets read out at every step.
+- This gating mechanism allows LSTMs to learn patterns that span hundreds of steps, something standard RNNs cannot do reliably.
+- LSTMs are a strong and practical choice for sequence tasks like time series forecasting, speech recognition, and text generation, especially when you do not have the resources for a full Transformer model.
+- If an RNN is not accurate enough on your sequence task, an LSTM is almost always the right next step.
 
 ---
 
