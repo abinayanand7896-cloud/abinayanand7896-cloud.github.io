@@ -5,275 +5,266 @@ nav_order: 1
 ---
 
 <style>
-/* ── CSS Variables ─────────────────────────────────── */
-:root {
-  --blue-50:  #eff6ff;
-  --blue-100: #dbeafe;
-  --blue-600: #2563eb;
-  --blue-700: #1d4ed8;
-  --blue-800: #1e40af;
-  --blue-900: #1e3a8a;
-  --violet-100: #ede9fe;
-  --violet-600: #7c3aed;
-  --rose-100:   #ffe4e6;
-  --rose-600:   #e11d48;
-  --slate-50:  #f8fafc;
-  --slate-100: #f1f5f9;
-  --slate-200: #e2e8f0;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-  --slate-900: #0f172a;
-}
-
-/* ── Hero ─────────────────────────────────────────── */
+/* ── Homepage hero ── */
 .page-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #1d4ed8 100%);
-  text-align: center;
-  padding: 60px 28px 0;
-  border-radius: 0 0 20px 20px;
-  margin-bottom: 48px;
   position: relative;
   overflow: hidden;
+  text-align: center;
+  padding: 100px 28px 0;
 }
-
+.page-hero::before {
+  content: '';
+  position: absolute;
+  width: 900px; height: 900px;
+  top: -300px; left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center,
+    rgba(99,102,241,0.38) 0%,
+    rgba(139,92,246,0.20) 30%,
+    transparent 70%);
+  pointer-events: none;
+}
 .page-hero::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle at 18% 60%, rgba(99,102,241,.14) 0%, transparent 45%),
-    radial-gradient(circle at 82% 15%, rgba(59,130,246,.12) 0%, transparent 40%),
-    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='%23ffffff' fill-opacity='0.04'/%3E%3C/svg%3E");
+  width: 600px; height: 600px;
+  bottom: -60px; right: -80px;
+  background: radial-gradient(ellipse at center, rgba(56,189,248,0.12) 0%, transparent 70%);
   pointer-events: none;
 }
-
-.hero-inner {
-  position: relative;
-  z-index: 1;
+.hero-orb-left {
+  position: absolute;
+  width: 400px; height: 400px;
+  bottom: 0; left: -80px;
+  background: radial-gradient(ellipse at center, rgba(244,63,94,0.09) 0%, transparent 70%);
+  pointer-events: none;
 }
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 2; }
 
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.15);
-  color: #bfdbfe;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: 100px;
-  margin-bottom: 22px;
+  gap: 7px;
+  background: rgba(99,102,241,0.10);
+  border: 1px solid rgba(99,102,241,0.22);
+  color: #a5b4fc;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 100px;
+  margin-bottom: 28px;
+}
+.eyebrow-pulse {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #818cf8;
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
 }
 
 .page-hero h1 {
-  font-size: clamp(26px, 4.5vw, 42px);
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 14px;
-  letter-spacing: -0.025em;
-  line-height: 1.12;
+  font-size: clamp(34px, 6vw, 64px);
+  font-weight: 900;
+  color: #f8fafc;
+  margin: 0 0 18px;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
+}
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.page-hero p {
-  font-size: 15.5px;
-  color: #93c5fd;
-  margin: 0 auto 28px;
-  max-width: 500px;
-  line-height: 1.65;
+.page-hero > .hero-inner > p {
+  font-size: 17px; color: #94a3b8;
+  margin: 0 auto 36px;
+  max-width: 480px; line-height: 1.7;
 }
 
-.hero-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  color: #1d4ed8;
-  padding: 12px 26px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
+.hero-actions {
+  display: flex; gap: 12px;
+  justify-content: center; flex-wrap: wrap;
+}
+.hero-cta-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #6366f1; color: #fff;
+  padding: 13px 26px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
   text-decoration: none;
-  transition: background .2s, transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(255,255,255,.12);
+  box-shadow: 0 0 0 1px rgba(99,102,241,.5),
+              0 4px 16px rgba(99,102,241,.35),
+              inset 0 1px 0 rgba(255,255,255,.15);
+  transition: all 0.15s ease;
 }
-.hero-cta:hover {
-  background: #f0f9ff;
-  color: #1d4ed8;
+.hero-cta-primary:hover {
+  background: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(99,102,241,.6),
+              0 8px 24px rgba(99,102,241,.45),
+              inset 0 1px 0 rgba(255,255,255,.15);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(255,255,255,.18);
 }
+.hero-cta-ghost {
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,0.04); color: #94a3b8;
+  padding: 12px 22px; border-radius: 10px;
+  font-size: 14px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.15s ease;
+}
+.hero-cta-ghost:hover { background: rgba(255,255,255,0.07); color: #cbd5e1; }
 
 .hero-stats {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  margin-top: 40px;
-  border-top: 1px solid rgba(255,255,255,.1);
-  position: relative;
-  z-index: 1;
+  display: flex; justify-content: center;
+  margin-top: 56px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  position: relative; z-index: 2;
 }
 .hero-stat {
-  flex: 1;
-  max-width: 130px;
-  padding: 20px 12px;
-  border-right: 1px solid rgba(255,255,255,.08);
+  padding: 24px 36px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  text-align: center;
 }
 .hero-stat:last-child { border-right: none; }
 .hero-stat-num {
-  font-size: 22px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-size: 28px; font-weight: 800;
+  letter-spacing: -0.04em; line-height: 1;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .hero-stat-label {
-  font-size: 10.5px;
-  color: #93c5fd;
-  margin-top: 5px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 10.5px; color: #475569;
+  text-transform: uppercase; letter-spacing: 0.08em;
   font-weight: 500;
 }
 
-/* ── Track sections ───────────────────────────────── */
-.track-section { margin-bottom: 48px; }
-
+/* ── Track sections ── */
+.homepage-content { max-width: 1000px; margin: 0 auto; padding: 56px 24px 80px; }
+.track-section { margin-bottom: 56px; }
 .track-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--slate-200);
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px; padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-
 .track-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 4px 12px;
-  border-radius: 100px;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 4px 12px; border-radius: 100px; border: 1px solid;
 }
-.badge-ml   { background: #dbeafe; color: #1d4ed8; }
-.badge-dl   { background: #ede9fe; color: #6d28d9; }
-.badge-soon { background: #fce7f3; color: #be185d; }
+.badge-ml   { background: rgba(99,102,241,.10); border-color: rgba(99,102,241,.25); color: #a5b4fc; }
+.badge-dl   { background: rgba(168,85,247,.10);  border-color: rgba(168,85,247,.25);  color: #d8b4fe; }
+.badge-soon { background: rgba(244,63,94,.08);   border-color: rgba(244,63,94,.20);   color: #fda4af; }
 
-.track-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.01em;
-}
-.track-count {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-left: auto;
-  font-weight: 500;
-}
+.track-title { font-size: 14px; font-weight: 600; color: #94a3b8; letter-spacing: -0.01em; }
+.track-count { font-size: 12px; color: #334155; margin-left: auto; font-weight: 500; }
 
-/* ── Card grid ────────────────────────────────────── */
+/* ── Cards ── */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
-
-/* ── Card ─────────────────────────────────────────── */
 .tcard {
   border-radius: 14px;
-  overflow: hidden;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid #e8edf3;
-  box-shadow: 0 1px 3px rgba(15,23,42,.04), 0 1px 2px rgba(15,23,42,.03);
-  transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
   text-decoration: none;
   display: block;
+  padding: 20px 16px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
-.tcard:hover {
-  box-shadow: 0 10px 28px rgba(15,23,42,.1), 0 2px 8px rgba(15,23,42,.05);
-  transform: translateY(-3px);
-  border-color: #c7d8f8;
+.tcard::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
 }
+.tcard.ml::before   { background: linear-gradient(135deg, rgba(99,102,241,.08) 0%, transparent 60%); }
+.tcard.dl::before   { background: linear-gradient(135deg, rgba(168,85,247,.08) 0%, transparent 60%); }
+.tcard.soon::before { background: linear-gradient(135deg, rgba(244,63,94,.05) 0%, transparent 60%); }
+.tcard:hover::before { opacity: 1; }
 
-.tcard-header {
-  padding: 22px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  min-height: 106px;
-  justify-content: center;
-  background: #f8fafc;
-}
+.tcard.ml:hover   { border-color: rgba(99,102,241,.35); box-shadow: 0 8px 32px rgba(0,0,0,.3), 0 0 0 1px rgba(99,102,241,.15); transform: translateY(-2px); }
+.tcard.dl:hover   { border-color: rgba(168,85,247,.35); box-shadow: 0 8px 32px rgba(0,0,0,.3), 0 0 0 1px rgba(168,85,247,.15); transform: translateY(-2px); }
+.tcard.soon:hover { border-color: rgba(244,63,94,.25);  box-shadow: 0 8px 32px rgba(0,0,0,.3); transform: translateY(-2px); }
+.tcard.soon { opacity: 0.5; pointer-events: none; }
 
 .tcard-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 11px;
-  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px; flex-shrink: 0;
 }
-.ml   .tcard-icon { background: #dbeafe; color: #1d4ed8; }
-.dl   .tcard-icon { background: #ede9fe; color: #6d28d9; }
-.soon .tcard-icon { background: #fce7f3; color: #be185d; }
-
-.tcard-icon svg {
-  width: 21px;
-  height: 21px;
-  stroke-width: 1.75;
-  flex-shrink: 0;
-}
+.tcard.ml   .tcard-icon { background: rgba(99,102,241,.15); color: #818cf8; }
+.tcard.dl   .tcard-icon { background: rgba(168,85,247,.15); color: #c084fc; }
+.tcard.soon .tcard-icon { background: rgba(244,63,94,.10);  color: #fda4af; }
+.tcard-icon svg { width: 18px; height: 18px; stroke-width: 1.75; }
 
 .tcard-name {
-  font-weight: 600;
-  font-size: 12px;
-  color: #0f172a;
-  line-height: 1.4;
-  letter-spacing: -0.005em;
+  font-weight: 600; font-size: 12px;
+  color: #cbd5e1; line-height: 1.4;
+  letter-spacing: -0.005em; margin-bottom: 6px;
+}
+.tcard-peek {
+  font-size: 11px; color: #475569; line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Peek strip */
-.tcard-peek {
-  background: #fff;
-  color: #64748b;
-  font-size: 11px;
-  line-height: 1.55;
-  padding: 0 14px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .3s ease, padding .25s ease;
-}
-.tcard:hover .tcard-peek {
-  max-height: 120px;
-  padding: 10px 14px 14px;
-  border-top: 1px solid #f1f5f9;
+/* ── Removed old peek hover — always visible now ── */
+.tcard-header { display: contents; }
+
+@media (max-width: 600px) {
+  .hero-stat { padding: 20px 16px; }
+  .hero-actions { flex-direction: column; align-items: center; }
+  .homepage-content { padding: 40px 16px 60px; }
 }
 </style>
 
 <!-- ═══ HERO ═══ -->
 <div class="page-hero">
+  <div class="hero-orb-left"></div>
+  <div class="hero-grid"></div>
   <div class="hero-inner">
     <div class="hero-eyebrow">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <div class="eyebrow-pulse"></div>
       Free · Open Source · No fluff
     </div>
-    <h1>AI From the Ground Up</h1>
-    <p>Machine learning tutorials with real formulas, honest explanations, and working code.</p>
-    <a class="hero-cta" href="{{ '/tutorials/setup' | relative_url }}">
-      Start from scratch
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </a>
+    <h1>AI, explained<br><span class="gradient-text">from the ground up</span></h1>
+    <p>Machine learning tutorials with real formulas, honest explanations, and working code. No hand-waving.</p>
+    <div class="hero-actions">
+      <a class="hero-cta-primary" href="{{ '/tutorials/what-is-ml' | relative_url }}">
+        Start from scratch
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a class="hero-cta-ghost" href="{{ '/tutorials/foundations' | relative_url }}">Browse all tutorials</a>
+    </div>
     <div class="hero-stats">
       <div class="hero-stat"><div class="hero-stat-num">23</div><div class="hero-stat-label">Tutorials</div></div>
       <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-label">Tracks</div></div>
@@ -281,6 +272,8 @@ nav_order: 1
     </div>
   </div>
 </div>
+
+<div class="homepage-content">
 
 <!-- ═══ ML BASICS ═══ -->
 <div class="track-section">
@@ -555,3 +548,4 @@ nav_order: 1
 
   </div>
 </div>
+</div><!-- /.homepage-content -->
